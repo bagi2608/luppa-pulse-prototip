@@ -48,8 +48,17 @@ body{
 .card.answered{min-height:400px}
 /* broj pitanja u krugu: beo krug sa blagom sivom ivicom, 25% veci od visine velikog slova (.727em x 1.25), regular broj (70% opacitet) sa 4px unutrasnjeg padinga, zakacen u gornji levi ugao kartice */
 .card{position:relative}
-.numc{position:absolute; top:18px; left:18px; display:block; width:.909em; height:.909em; border-radius:50%; background:#fff; border:1px solid rgba(0,0,0,.16)}
-.numc > b{position:absolute; inset:4px; display:grid; place-items:center; color:rgba(23,23,56,.7); font:400 .4em/1 'Inter',sans-serif; letter-spacing:0; font-variant-numeric:tabular-nums}
+.numc{
+  position:absolute; top:18px; left:18px; display:flex; align-items:center; justify-content:center; box-sizing:border-box;
+  width:.909em; height:.909em; padding:0 .17em; border-radius:999px; background:#fff; border:1px solid rgba(0,0,0,.16);
+  transition:width .4s var(--ease-out), border-color .3s var(--ease-out);
+}
+.numc > b{color:rgba(23,23,56,.7); font:400 .4em/1 'Inter',sans-serif; letter-spacing:0; font-variant-numeric:tabular-nums; white-space:nowrap}
+.numc .ck{display:block; width:0; height:.36em; margin-left:0; opacity:0; overflow:hidden; transition:width .4s var(--ease-out), margin-left .4s var(--ease-out), opacity .25s var(--ease-out) .1s}
+.numc .ck svg{display:block; width:.42em; height:100%}
+/* odgovoreno: krug se rasiri u pilulicu sa zelenom kvacicom */
+.card.answered .numc{width:1.6em; border-color:rgba(31,138,76,.4)}
+.card.answered .numc .ck{width:.42em; margin-left:.14em; opacity:1}
 .q{
   font-size:23px; line-height:30px; letter-spacing:-.23px;
   text-align:center; max-width:648px; margin:0 0 44px;
@@ -454,9 +463,11 @@ $(function(){
        items:['Inovacije i promena','Komunikacija','Plata i benefiti','Timski duh','Razvoj karijere']}
   };
   var esc = function(t){ return $('<div>').text(t).html(); };
+  var CHECK = '<i class="ck" aria-hidden="true"><svg viewBox="0 0 12 10" fill="none" stroke="#1F8A4C" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 5.2 4.6 8.2 10.5 1.8"/></svg></i>';
+  function numHtml(i){ return '<span class="numc"><b>'+('0'+(i+1)).slice(-2)+'</b>'+CHECK+'</span>'; }
   var GRIP = '<svg width="12" height="18" viewBox="0 0 12 18" fill="none" stroke="#171738" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4.5 6 1.5l3 3M3 13.5l3 3 3-3M2 7.5h8M2 10.5h8"/></svg>';
   function appendSpecial(sp, i){
-    var head = '<div class="qh"><span class="qn"><span class="numc"><b>'+('0'+(i+1)).slice(-2)+'</b></span></span><div class="qtx"><p class="qt-title">'+esc(sp.text)+'</p>'+
+    var head = '<div class="qh"><span class="qn">'+numHtml(i)+'</span><div class="qtx"><p class="qt-title">'+esc(sp.text)+'</p>'+
                (sp.hint ? '<p class="qt-hint">'+esc(sp.hint)+'</p>' : '')+'</div></div>', body = '';
     if(sp.type === 'radio' || sp.type === 'check'){
       body = '<div class="opts" role="'+(sp.type==='radio' ? 'radiogroup' : 'group')+'">'+sp.options.map(function(o,k){
@@ -495,7 +506,7 @@ $(function(){
     }).join('');
     $stream.append(
       '<section class="card" data-i="'+i+'" style="opacity:0;transform:translateY(14px)">'+
-        '<p class="q"><span class="numc"><b>'+('0'+(i+1)).slice(-2)+'</b></span>'+q+'</p>'+
+        '<p class="q">'+numHtml(i)+q+'</p>'+
         '<div class="answer-line"></div>'+
         '<div class="scale-row">'+
           '<span class="edge left">Ne slažem se</span>'+
