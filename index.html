@@ -395,7 +395,6 @@ $(function(){
     $n.text(text).toggleClass('ok', !!ok).addClass('on');
     if(!keep) noteTimer = setTimeout(function(){ $n.removeClass('on'); }, 2000);
   }
-  var isMobile = function(){ return window.matchMedia('(max-width: 640px)').matches; };
   function markComment($c, has){
     $c.toggleClass('has', has);
     $c.find('.ct-label').text(has ? 'Komentar sačuvan ✓' : 'Dodaj komentar');
@@ -406,7 +405,6 @@ $(function(){
     else { delete comments[i]; $ta.val('').removeClass('saved'); noteFor($ta, 'Komentar obrisan'); }
     markComment($c, !!v);
     $ta.blur();
-    if(isMobile()) setTimeout(function(){ $c.removeClass('open').find('.comment-toggle').attr('aria-expanded','false'); }, 900);
   }
   $stream.on('keydown','.comment textarea',function(e){
     if(e.key !== 'Enter' || e.shiftKey || e.isComposing) return;
@@ -457,7 +455,11 @@ $(function(){
     paint($card.find('.scale'), v, stagger);
     $card.find('.seg').removeClass('hovered');
     $card.addClass('answered').find('.answer-line').text('Odgovor: '+LABELS[v]);
-    if(isNew) updateProgress(true);
+    if(isNew){
+      // na mobilnom komentar odmah izlazi otvoren (kao na desktopu), a strelica ga moze zatvoriti
+      $card.find('.comment').addClass('open').find('.comment-toggle').attr('aria-expanded','true');
+      updateProgress(true);
+    }
   }
   var drag = null;
   $stream.on('pointerdown','.seg',function(e){
