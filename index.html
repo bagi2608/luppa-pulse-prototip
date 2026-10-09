@@ -36,7 +36,7 @@ body{
 .stream{
   position:relative; z-index:1;
   max-width:1020px; margin:0 auto;
-  padding:245px 16px 220px;
+  padding:245px 16px 0;
 }
 .card{
   background:#fff; border:1px solid rgba(0,0,0,.16); border-radius:24px;
@@ -169,29 +169,23 @@ body{
   content:''; position:absolute; left:50%; bottom:-2.5px; transform:translateX(-50%);
   border:2.6px solid transparent; border-top:4.5px solid #fff; border-bottom:none;
 }
-.next{
-  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
-  gap:12px;
-  opacity:0; pointer-events:none; transform:translateY(16px) scale(.97);
-  transition:opacity .26s var(--ease-drawer) .06s, transform .26s var(--ease-drawer) .06s;
-}
-.dock.done .pill{opacity:0; transform:translateY(12px)}
-.dock.done .next{opacity:1; pointer-events:auto; transform:none}
-.next button{
+/* Back / Next page: odmah ispod poslednje kartice */
+.nav{position:relative; z-index:1; max-width:1020px; margin:0 auto; padding:12px 16px 170px; display:flex; align-items:center; justify-content:center; gap:12px}
+.nav button{
   height:44px; padding:0 36px; border:none; border-radius:24px; cursor:pointer;
   color:#fff; font:600 15px 'Inter',sans-serif;
   background:linear-gradient(180deg,#21214D,#171738);
   box-shadow:0 8px 20px rgba(23,23,56,.25);
   transition:transform .14s var(--ease-out);
 }
-.next button:active{transform:scale(.96)}
-.next button[hidden]{display:none}
-.next .nb-count{margin-left:10px; padding-left:10px; border-left:1px solid rgba(255,255,255,.35); font-weight:500; opacity:.85; white-space:nowrap}
-.next button.secondary{
+.nav button:active{transform:scale(.96)}
+.nav button[hidden]{display:none}
+.nav .nb-count{margin-left:10px; padding-left:10px; border-left:1px solid rgba(255,255,255,.35); font-weight:500; opacity:.85; white-space:nowrap}
+.nav button.secondary{
   background:transparent; color:var(--ink); box-shadow:none; border:1.5px solid var(--ink);
   padding:0 28px; transition:transform .14s var(--ease-out), background .15s ease;
 }
-.next button.secondary:hover{background:rgba(23,23,56,.06)}
+.nav button.secondary:hover{background:rgba(23,23,56,.06)}
 /* final card */
 .final{
   display:none; text-align:center; padding:80px 40px;
@@ -282,7 +276,8 @@ body{
   .hero{padding-top:32px}
   .hero img{height:27px}
   .hero h1{font-size:20px; line-height:25px; margin:36px 16px 0}
-  .stream{padding:150px 8px 200px}
+  .stream{padding:150px 8px 0}
+  .nav{padding:12px 8px 150px}
   .card{padding:19px 16px; border-radius:20px; min-height:0; margin-bottom:12px}
   .card.answered{min-height:0}
   .q{font-size:16px; line-height:22px; letter-spacing:-.16px; margin-bottom:20px; font-weight:500; text-align:left; width:100%}
@@ -327,10 +322,10 @@ body{
   .pill .knob{top:10px; width:16px; height:16px; border-width:3px}
   .bubble{bottom:37px; height:26px; line-height:26px; padding:0 14px}
   .dock{bottom:calc(28px + env(safe-area-inset-bottom,0px)); width:calc(100vw - 32px)}
-  .next button{padding:0 20px}
+  .nav button{padding:0 20px}
   #nextBtn{flex:1 1 auto; max-width:240px}
   #backBtn{flex:0 0 auto}
-  .next:has(#backBtn[hidden]) #nextBtn{max-width:326px}
+  .nav:has(#backBtn[hidden]) #nextBtn{max-width:326px}
   .final{padding:56px 20px}
   .card.qt{padding:40px 16px 22px; border-radius:20px}
   .card:not(.qt){padding-top:40px}
@@ -364,13 +359,14 @@ body{
 
 <main class="stream" id="stream"></main>
 
+<div class="nav" id="nav"><button id="backBtn" class="secondary" type="button" hidden>Back</button><button id="nextBtn" type="button">Next page</button></div>
+
 <div class="page-pin" id="pagePin"></div>
 
 <div class="veil" id="veil"></div>
 
 <div class="dock" id="dock">
   <div class="pill" id="pill"></div>
-  <div class="next"><button id="backBtn" class="secondary" type="button" hidden>Back</button><button id="nextBtn" type="button">Next page</button></div>
 </div>
 
 <script>
@@ -742,10 +738,6 @@ $(function(){
     var t = Math.min(1, y/160);
     $('#hero').css({opacity: 1 - t*0.88, transform:'translateY('+(-t*14)+'px)'});
 
-    var doc = document.documentElement;
-    var atEnd = y + window.innerHeight >= doc.scrollHeight - 40;
-    $('#dock').toggleClass('done', atEnd);
-    $('#veil').css('opacity', atEnd ? 0 : 1);
 
     // "Strana X od Y": u flow-u nestaje cim se krene skrolovati; zakacena se vraca kad logo i naslov izadju iz vidnog polja
     $('.page-label').css('opacity', .55 * (1 - Math.min(1, y/50)));
