@@ -97,6 +97,8 @@ body{
 .comment-note{height:18px; margin-top:6px; font-size:12px; text-align:right; color:rgba(23,23,56,.6); opacity:0; transition:opacity .2s var(--ease-out)}
 .comment-note.on{opacity:1}
 .comment-note.ok{color:#1F8A4C}
+.comment-toggle, .comment-save{display:none}
+.comment-body{display:block}
 /* ---------- bottom veil + progress ---------- */
 .veil{
   position:fixed; left:0; right:0; bottom:0; height:168px; z-index:2;
@@ -210,7 +212,31 @@ body{
   .edge.right{opacity:.7}
   .edge.left{order:2; margin-right:auto; text-align:left}
   .edge.right{order:3; margin-left:auto; text-align:left}
-  .comment{display:none !important}
+  /* komentar kao accordion: zatvoren dok ga ne otvoris */
+  .comment{margin-top:14px; max-width:none; display:none}
+  .card.answered .comment{display:block}
+  .comment-toggle{
+    display:flex; align-items:center; gap:8px; width:100%; min-height:44px; padding:0 14px;
+    border:1px solid rgba(0,0,0,.16); border-radius:12px; background:#fff; color:var(--ink);
+    font:500 14px 'Inter',sans-serif; text-align:left; cursor:pointer; -webkit-tap-highlight-color:transparent;
+  }
+  .comment-toggle .ct-opt{opacity:.55; font-weight:400}
+  .comment-toggle .ct-chev{
+    margin-left:auto; width:8px; height:8px; border-right:2px solid currentColor; border-bottom:2px solid currentColor;
+    transform:translateY(-2px) rotate(45deg); transition:transform .25s var(--ease-out); opacity:.6;
+  }
+  .comment.open .comment-toggle .ct-chev{transform:translateY(2px) rotate(-135deg)}
+  .comment.has .comment-toggle{border-color:rgba(23,23,56,.4)}
+  .comment.has .ct-opt{display:none}
+  .comment-body{display:grid; grid-template-rows:0fr; transition:grid-template-rows .3s var(--ease-out)}
+  .comment.open .comment-body{grid-template-rows:1fr}
+  .comment-inner{overflow:hidden; min-height:0}
+  .comment-inner > textarea{margin-top:8px; font-size:16px}
+  .comment-save{
+    display:block; margin:8px 0 0 auto; height:36px; padding:0 18px; border:0; border-radius:18px; cursor:pointer;
+    background:var(--ink); color:#fff; font:600 14px 'Inter',sans-serif;
+  }
+  .comment-save:active{transform:scale(.96)}
   .pill{height:36px; border-radius:18px}
   .pill .track{left:16px; right:16px; top:13px; height:10px}
   .pill .track, .pt-seg{border-radius:5px}
@@ -339,7 +365,14 @@ $(function(){
           '<div class="scale">'+segs+'</div>'+
           '<span class="edge right">Slažem se</span>'+
         '</div>'+
-        '<div class="comment"><textarea placeholder="Komentar (opciono) — Enter za čuvanje, Shift+Enter za novi red"></textarea><div class="comment-note"></div></div>'+
+        '<div class="comment">'+
+          '<button type="button" class="comment-toggle" aria-expanded="false"><span class="ct-label">Dodaj komentar</span><span class="ct-opt">(opciono)</span><span class="ct-chev"></span></button>'+
+          '<div class="comment-body"><div class="comment-inner">'+
+            '<textarea placeholder="Komentar (opciono) — Enter za čuvanje, Shift+Enter za novi red"></textarea>'+
+            '<div class="comment-note"></div>'+
+            '<button type="button" class="comment-save">Sačuvaj</button>'+
+          '</div></div>'+
+        '</div>'+
       '</section>'
     );
     if(answers[i] !== undefined){
@@ -347,7 +380,11 @@ $(function(){
       paint($c.find('.scale'), answers[i]);
       $c.addClass('answered').find('.answer-line').text('Odgovor: '+LABELS[answers[i]]);
     }
-    if(comments[i] !== undefined) $stream.children().last().find('textarea').val(comments[i]).addClass('saved');
+    if(comments[i] !== undefined){
+      var $cm = $stream.children().last();
+      $cm.find('textarea').val(comments[i]).addClass('saved');
+      markComment($cm.find('.comment'), true);
+    }
   }
 
   // komentar: Enter ga cuva (Shift+Enter je novi red); ostaje zabelezen i kad se promeni strana
@@ -358,13 +395,30 @@ $(function(){
     $n.text(text).toggleClass('ok', !!ok).addClass('on');
     if(!keep) noteTimer = setTimeout(function(){ $n.removeClass('on'); }, 2000);
   }
+  var isMobile = function(){ return window.matchMedia('(max-width: 640px)').matches; };
+  function markComment($c, has){
+    $c.toggleClass('has', has);
+    $c.find('.ct-label').text(has ? 'Komentar sačuvan ✓' : 'Dodaj komentar');
+  }
+  function saveComment($ta){
+    var $c = $ta.closest('.comment'), i = +$ta.closest('.card').data('i'), v = $.trim($ta.val());
+    if(v){ comments[i] = v; $ta.val(v).addClass('saved'); noteFor($ta, 'Komentar sačuvan ✓', true); }
+    else { delete comments[i]; $ta.val('').removeClass('saved'); noteFor($ta, 'Komentar obrisan'); }
+    markComment($c, !!v);
+    $ta.blur();
+    if(isMobile()) setTimeout(function(){ $c.removeClass('open').find('.comment-toggle').attr('aria-expanded','false'); }, 900);
+  }
   $stream.on('keydown','.comment textarea',function(e){
     if(e.key !== 'Enter' || e.shiftKey || e.isComposing) return;
     e.preventDefault();
-    var $ta = $(this), i = +$ta.closest('.card').data('i'), v = $.trim($ta.val());
-    if(v){ comments[i] = v; $ta.val(v).addClass('saved'); noteFor($ta, 'Komentar sačuvan ✓', true); }
-    else { delete comments[i]; $ta.val('').removeClass('saved'); noteFor($ta, 'Komentar obrisan'); }
-    $ta.blur();
+    saveComment($(this));
+  });
+  $stream.on('click','.comment-save',function(){ saveComment($(this).siblings('textarea')); });
+  $stream.on('click','.comment-toggle',function(){
+    var $c = $(this).closest('.comment'), open = !$c.hasClass('open');
+    $c.toggleClass('open', open);
+    $(this).attr('aria-expanded', open);
+    if(open) setTimeout(function(){ $c.find('textarea').focus(); }, 280);
   });
   $stream.on('input','.comment textarea',function(){
     var $ta = $(this), i = +$ta.closest('.card').data('i');
