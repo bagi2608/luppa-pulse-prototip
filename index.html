@@ -93,6 +93,10 @@ body{
   background:#fff; outline:none;
 }
 .comment textarea:focus{border-color:var(--c6)}
+.comment textarea.saved{border-color:rgba(23,23,56,.4)}
+.comment-note{height:18px; margin-top:6px; font-size:12px; text-align:right; color:rgba(23,23,56,.6); opacity:0; transition:opacity .2s var(--ease-out)}
+.comment-note.on{opacity:1}
+.comment-note.ok{color:#1F8A4C}
 /* ---------- bottom veil + progress ---------- */
 .veil{
   position:fixed; left:0; right:0; bottom:0; height:168px; z-index:2;
@@ -335,7 +339,7 @@ $(function(){
           '<div class="scale">'+segs+'</div>'+
           '<span class="edge right">Slažem se</span>'+
         '</div>'+
-        '<div class="comment"><textarea placeholder="Komentar (opciono)…"></textarea></div>'+
+        '<div class="comment"><textarea placeholder="Komentar (opciono) — Enter za čuvanje, Shift+Enter za novi red"></textarea><div class="comment-note"></div></div>'+
       '</section>'
     );
     if(answers[i] !== undefined){
@@ -343,7 +347,31 @@ $(function(){
       paint($c.find('.scale'), answers[i]);
       $c.addClass('answered').find('.answer-line').text('Odgovor: '+LABELS[answers[i]]);
     }
+    if(comments[i] !== undefined) $stream.children().last().find('textarea').val(comments[i]).addClass('saved');
   }
+
+  // komentar: Enter ga cuva (Shift+Enter je novi red); ostaje zabelezen i kad se promeni strana
+  var comments = {}, noteTimer;
+  function noteFor($ta, text, ok, keep){
+    var $n = $ta.siblings('.comment-note');
+    clearTimeout(noteTimer);
+    $n.text(text).toggleClass('ok', !!ok).addClass('on');
+    if(!keep) noteTimer = setTimeout(function(){ $n.removeClass('on'); }, 2000);
+  }
+  $stream.on('keydown','.comment textarea',function(e){
+    if(e.key !== 'Enter' || e.shiftKey || e.isComposing) return;
+    e.preventDefault();
+    var $ta = $(this), i = +$ta.closest('.card').data('i'), v = $.trim($ta.val());
+    if(v){ comments[i] = v; $ta.val(v).addClass('saved'); noteFor($ta, 'Komentar sačuvan ✓', true); }
+    else { delete comments[i]; $ta.val('').removeClass('saved'); noteFor($ta, 'Komentar obrisan'); }
+    $ta.blur();
+  });
+  $stream.on('input','.comment textarea',function(){
+    var $ta = $(this), i = +$ta.closest('.card').data('i');
+    $ta.removeClass('saved');
+    if($.trim($ta.val()) !== (comments[i] || '')) noteFor($ta, 'Pritisni Enter da sačuvaš', false, true);
+    else $ta.siblings('.comment-note').removeClass('on');
+  });
 
   var answers = {};
 
