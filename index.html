@@ -99,6 +99,23 @@ body{
 .comment-note.ok{color:#1F8A4C}
 .comment-toggle{display:none}
 .comment-body{display:block}
+/* desktop: donji razmak kartice = gornji (56px); komentar je spusten dok pitanje nije odgovoreno pa se kartica sama prosiri */
+@media (min-width: 641px){
+  .card:not(.qt){min-height:0; padding-bottom:56px}
+  .card:not(.qt).answered{min-height:0}
+  .card:not(.qt){transition:padding-bottom .42s var(--ease-out)}
+  .card:not(.qt).answered{padding-bottom:32px} /* + 24px mesta za poruku ispod polja = 56px */
+  .card:not(.qt) .comment{
+    display:grid; grid-template-rows:0fr; margin-top:0;
+    transition:grid-template-rows .42s var(--ease-out), opacity .26s var(--ease-out) .08s, transform .26s var(--ease-out) .08s, visibility 0s .42s;
+  }
+  .card:not(.qt).answered .comment{
+    grid-template-rows:1fr;
+    transition:grid-template-rows .42s var(--ease-out), opacity .26s var(--ease-out) .08s, transform .26s var(--ease-out) .08s;
+  }
+  .card:not(.qt) .comment-body{min-height:0; overflow:hidden}
+  .card:not(.qt) .comment-inner > textarea{margin-top:40px}
+}
 /* ---------- bottom veil + progress ---------- */
 .veil{
   position:fixed; left:0; right:0; bottom:0; height:168px; z-index:2;
