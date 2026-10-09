@@ -215,7 +215,7 @@ body{
   <div class="pill" id="pill">
     <div class="track"><div class="fill" id="fill"></div></div>
     <div class="knob" id="knob"></div>
-    <div class="bubble" id="bubble">0/5</div>
+    <div class="bubble" id="bubble">0%</div>
   </div>
   <div class="next"><button id="nextBtn">Next page</button></div>
 </div>
@@ -310,16 +310,17 @@ $(function(){
   }
   measure(); $(window).on('resize', measure);
 
+  function pct(n){ return Math.round(n/total*100)+'%'; }
   function setBubble(text){ $('#bubble').text(text); }
   function updateProgress(announce){
     var n = count(), p = n/total;
     $('#pill').css('--p', p);
     $('#fill,#knob,.bubble').css('--p', p);
-    setBubble(n+'/'+total);
+    setBubble(pct(n));
     if(announce && MILESTONES[n]){
       clearTimeout(msgTimer);
       setBubble(MILESTONES[n]);
-      msgTimer = setTimeout(function(){ setBubble(count()+'/'+total); }, 2200);
+      msgTimer = setTimeout(function(){ setBubble(pct(count())); }, 2200);
     }
   }
   updateProgress(false);
@@ -327,9 +328,8 @@ $(function(){
   // idle poruke
   setInterval(function(){
     if(count()<total){
-      var prev = count()+'/'+total;
       setBubble('Your answers are anonymous');
-      setTimeout(function(){ setBubble(count()+'/'+total); }, 2600);
+      setTimeout(function(){ setBubble(pct(count())); }, 2600);
     }
   }, 12000);
 
@@ -353,7 +353,7 @@ $(function(){
       $('html,body').animate({scrollTop: missing.offset().top - 80}, 420);
       clearTimeout(msgTimer);
       setBubble('Answer all questions first');
-      msgTimer = setTimeout(function(){ setBubble(count()+'/'+total); }, 2200);
+      msgTimer = setTimeout(function(){ setBubble(pct(count())); }, 2200);
     } else {
       $('#finalCard').show();
       $('html,body').animate({scrollTop: $('#finalCard').offset().top - 120}, 420);
