@@ -239,9 +239,9 @@ body{
 .qbody{margin:23px 0 0}
 /* radio / checkbox */
 .opts{display:flex; flex-direction:column; gap:14px; padding-left:34px}
-.opt{display:flex; align-items:center; gap:8px; min-height:32px; cursor:pointer; font:600 16px/20px 'Inter',sans-serif; position:relative; -webkit-tap-highlight-color:transparent}
+.opt{display:flex; align-items:center; gap:8px; min-height:32px; cursor:pointer; font:400 16px/20px 'Inter',sans-serif; position:relative; -webkit-tap-highlight-color:transparent}
 .opt input{position:absolute; opacity:0; width:24px; height:24px; margin:0; cursor:pointer}
-.opt .ctl{flex:0 0 24px; width:24px; height:24px; border:1.5px solid var(--ink); background:#fff; transition:background .15s ease, box-shadow .15s ease}
+.opt .ctl{flex:0 0 24px; width:24px; height:24px; border:1px solid rgba(0,0,0,.16); background:#fff; transition:background .15s ease, border-color .15s ease, box-shadow .15s ease}
 .opt .ctl.radio{border-radius:50%; position:relative}
 .opt .ctl.radio::after{content:''; position:absolute; inset:5px; border-radius:50%; background:var(--ink); transform:scale(0); transition:transform .18s var(--ease-out)}
 .opt input:checked + .ctl.radio::after{transform:scale(1)}
@@ -250,7 +250,7 @@ body{
   content:''; position:absolute; left:7px; top:3px; width:6px; height:11px;
   border:solid #fff; border-width:0 2px 2px 0; transform:rotate(45deg) scale(0); transition:transform .18s var(--ease-out);
 }
-.opt input:checked + .ctl.check{background:var(--ink)}
+.opt input:checked + .ctl.check{background:var(--ink); border-color:var(--ink)}
 .opt input:checked + .ctl.check::after{transform:rotate(45deg) scale(1)}
 .opt input:focus-visible + .ctl{box-shadow:0 0 0 3px rgba(255,82,27,.35)}
 .opt:active .ctl{transform:scale(.94)}
@@ -265,11 +265,11 @@ body{
 /* rangiranje (prevuci i spusti) */
 .rank{list-style:none; margin:0; padding:0; counter-reset:rk; display:flex; flex-direction:column; gap:10px}
 .rk{display:flex; align-items:center; gap:0; height:52px; counter-increment:rk; outline:none; user-select:none; -webkit-user-select:none}
-.rk::before{content:counter(rk)'.'; flex:0 0 30px; font:600 16px/20px 'Inter',sans-serif}
+.rk::before{content:counter(rk)'.'; flex:0 0 30px; font:400 16px/20px 'Inter',sans-serif}
 .rk-box{
   flex:1; height:50px; display:flex; align-items:center; justify-content:space-between; padding:0 20px 0 16px;
   background:rgba(23,23,56,.06); border:1px solid transparent; border-radius:6px; cursor:grab;
-  font:600 16px/20px 'Inter',sans-serif; transition:border-color .15s ease, background .15s ease, box-shadow .15s ease;
+  font:400 16px/20px 'Inter',sans-serif; transition:border-color .15s ease, background .15s ease, box-shadow .15s ease;
 }
 .rk:focus-visible .rk-box{border-color:var(--ink)}
 .rk.dragging .rk-box{border-color:var(--ink); cursor:grabbing; box-shadow:0 6px 16px rgba(23,23,56,.12); background:rgba(23,23,56,.09)}
