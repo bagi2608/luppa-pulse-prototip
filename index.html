@@ -46,9 +46,9 @@ body{
   transition:min-height .42s var(--ease-out);
 }
 .card.answered{min-height:400px}
-/* broj pitanja u krugu: precnik kruga = visina velikog slova (cap height Intera = .727em), sedi na baznoj liniji */
-.numc{position:relative; display:inline-block; width:.727em; height:.727em; margin-right:.45em; border-radius:50%; background:var(--ink)}
-.numc > b{position:absolute; inset:0; display:grid; place-items:center; color:#fff; font:700 .44em/1 'Inter',sans-serif; letter-spacing:0; font-variant-numeric:tabular-nums}
+/* broj pitanja u krugu: beo krug sa blagom sivom ivicom, za 25% veci od visine velikog slova (.727em x 1.25), sedi na baznoj liniji */
+.numc{position:relative; display:inline-block; width:.909em; height:.909em; margin-right:.45em; border-radius:50%; background:#fff; border:1px solid rgba(0,0,0,.16)}
+.numc > b{position:absolute; inset:0; display:grid; place-items:center; color:var(--ink); font:700 .52em/1 'Inter',sans-serif; letter-spacing:0; font-variant-numeric:tabular-nums}
 .q{
   font-size:23px; line-height:30px; letter-spacing:-.23px;
   text-align:center; max-width:648px; margin:0 0 44px;
