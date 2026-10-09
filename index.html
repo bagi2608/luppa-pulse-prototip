@@ -46,6 +46,7 @@ body{
   transition:min-height .42s var(--ease-out);
 }
 .card.answered{min-height:400px}
+.qnum{font-weight:600; margin-right:2px}
 .q{
   font-size:23px; line-height:30px; letter-spacing:-.23px;
   text-align:center; max-width:648px; margin:0 0 44px;
@@ -466,7 +467,7 @@ $(function(){
     }).join('');
     $stream.append(
       '<section class="card" data-i="'+i+'" style="opacity:0;transform:translateY(14px)">'+
-        '<p class="q">'+q+'</p>'+
+        '<p class="q"><span class="qnum">'+('0'+(i+1)).slice(-2)+'.</span> '+q+'</p>'+
         '<div class="answer-line"></div>'+
         '<div class="scale-row">'+
           '<span class="edge left">Ne slažem se</span>'+
