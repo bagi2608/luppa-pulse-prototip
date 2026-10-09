@@ -56,6 +56,9 @@ body{
 .numc > b{color:rgba(23,23,56,.7); font:400 .4em/1 'Inter',sans-serif; letter-spacing:0; font-variant-numeric:tabular-nums; white-space:nowrap}
 .numc .ck{display:block; width:0; height:.36em; margin-left:0; opacity:0; overflow:hidden; transition:width .4s var(--ease-out), margin-left .4s var(--ease-out), opacity .25s var(--ease-out) .1s}
 .numc .ck svg{display:block; width:.42em; height:100%}
+/* neodgovoreno pitanje posle klika na Next page: crven krug */
+.card.missing:not(.answered) .numc{border-color:#C8371A; background:#FFF1ED}
+.card.missing:not(.answered) .numc > b{color:#C8371A}
 /* odgovoreno: krug se rasiri u pilulicu sa zelenom kvacicom */
 .card.answered .numc{width:1.6em; border-color:rgba(31,138,76,.4)}
 .card.answered .numc .ck{width:.42em; margin-left:.14em; opacity:1}
@@ -769,6 +772,7 @@ $(function(){
     if(pageCount(page) < PER){
       // nisu sva pitanja odgovorena: ostaje na strani i ispod dugmeta pise napomena
       $('#navNote').addClass('on');
+      $('.card').not('.final').each(function(){ if(answers[$(this).data('i')] === undefined) $(this).addClass('missing'); });
     } else if(page < PAGES-1){
       page++;
       renderPage();
