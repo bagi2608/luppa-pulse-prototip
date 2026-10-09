@@ -170,7 +170,10 @@ body{
   border:2.6px solid transparent; border-top:4.5px solid #fff; border-bottom:none;
 }
 /* Back / Next page: odmah ispod poslednje kartice */
-.nav{position:relative; z-index:1; max-width:1020px; margin:0 auto; padding:12px 16px 170px; display:flex; align-items:center; justify-content:center; gap:12px}
+.nav{position:relative; z-index:1; max-width:1020px; margin:0 auto; padding:12px 16px 170px; display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:12px}
+/* napomena ispod Next page kad nisu odgovorena sva pitanja */
+.nav-note{flex:0 0 100%; text-align:center; font:500 14px/20px 'Inter',sans-serif; color:#C8371A; opacity:0; transform:translateY(-4px); transition:opacity .25s var(--ease-out), transform .25s var(--ease-out); pointer-events:none}
+.nav-note.on{opacity:1; transform:none}
 .nav button{
   height:44px; padding:0 36px; border:none; border-radius:24px; cursor:pointer;
   color:#fff; font:600 15px 'Inter',sans-serif;
@@ -359,7 +362,7 @@ body{
 
 <main class="stream" id="stream"></main>
 
-<div class="nav" id="nav"><button id="backBtn" class="secondary" type="button" hidden>Back</button><button id="nextBtn" type="button">Next page</button></div>
+<div class="nav" id="nav"><button id="backBtn" class="secondary" type="button" hidden>Back</button><button id="nextBtn" type="button">Next page</button><div class="nav-note" id="navNote" role="alert" aria-live="polite">All questions are mandatory</div></div>
 
 <div class="page-pin" id="pagePin"></div>
 
@@ -436,6 +439,7 @@ $(function(){
     var lbl = 'Strana '+(page+1)+' od '+PAGES;
     $stream.empty().append('<div class="page-label">'+lbl+'</div>');
     $('#pagePin').text(lbl);
+    $('#navNote').removeClass('on');
     QUESTIONS.slice(page*PER, page*PER+PER).forEach(function(q,j){ appendCard(q, page*PER+j); });
     $stream.append('<section class="card final" id="finalCard"><h2>Hvala! Upitnik je završen 🎉</h2></section>');
     $('.card').not('.final').each(function(i){
@@ -710,6 +714,7 @@ $(function(){
   if(document.fonts && document.fonts.ready) document.fonts.ready.then(function(){ renderBar(); });
 
   function updateProgress(announce){
+    if(pageCount(page) === PER) $('#navNote').removeClass('on');
     var n = count();
     renderBar();
     setBubble(pct(n));
@@ -762,9 +767,8 @@ $(function(){
   // Next page
   $('#nextBtn').on('click', function(){
     if(pageCount(page) < PER){
-      // nisu sva pitanja odgovorena: ostaje na strani i skrola do prvog neodgovorenog (bez poruke)
-      var missing = $('.card').not('.final').filter(function(){ return answers[$(this).data('i')] === undefined; }).first();
-      $('html,body').animate({scrollTop: missing.offset().top - 80}, 420);
+      // nisu sva pitanja odgovorena: ostaje na strani i ispod dugmeta pise napomena
+      $('#navNote').addClass('on');
     } else if(page < PAGES-1){
       page++;
       renderPage();
