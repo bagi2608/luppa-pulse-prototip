@@ -761,13 +761,7 @@ $(function(){
 
   // Next page
   $('#nextBtn').on('click', function(){
-    if(pageCount(page) < PER){
-      var missing = $('.card').not('.final').filter(function(){ return answers[$(this).data('i')] === undefined; }).first();
-      $('html,body').animate({scrollTop: missing.offset().top - 80}, 420);
-      clearTimeout(msgTimer);
-      setBubble('Answer all questions first');
-      msgTimer = setTimeout(function(){ setBubble(pct(count())); }, 2200);
-    } else if(page < PAGES-1){
+    if(page < PAGES-1){
       page++;
       renderPage();
       window.scrollTo(0,0);
