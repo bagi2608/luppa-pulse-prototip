@@ -104,39 +104,39 @@ body{
 }
 .pill{
   width:589px; max-width:calc(100vw - 32px); height:29px;
-  background:var(--bg); border-top:1px solid rgba(0,0,0,.04); border-radius:15px;
-  box-shadow:0 1px 2px rgba(0,0,0,.1),0 4px 4px rgba(0,0,0,.09),0 8px 5px rgba(0,0,0,.05),0 14px 6px rgba(0,0,0,.01);
+  background:#fff; border-top:1px solid rgba(0,0,0,.04); border-radius:15px;
+  box-shadow:0 2px 1px rgba(0,0,0,.09);
   position:relative;
   transition:transform .18s var(--ease-out), opacity .18s var(--ease-out);
 }
 .pill .track{
-  position:absolute; left:12px; right:17px; top:11px; height:6px;
-  border-radius:3px; background:rgba(23,23,56,.08); overflow:hidden;
+  position:absolute; left:12px; right:17px; top:12px; height:4px;
+  border-radius:2px; background:rgba(216,216,216,.5); overflow:hidden;
 }
 .pill .fill{
   position:absolute; inset:0;
-  background:linear-gradient(90deg,#E0E0FF,#171738);
+  background:linear-gradient(90deg,#FFC8B4,#FF521B);
   transform-origin:left; transform:scaleX(var(--p,0));
   transition:transform .42s var(--ease-out);
 }
 .pill .knob{
-  position:absolute; top:8px; left:9px; width:12px; height:12px;
-  background:#fff; border:2px solid var(--ink); border-radius:50%;
+  position:absolute; top:8px; left:6px; width:12px; height:12px;
+  background:#fff; border:3px solid #FF521B; border-radius:50%;
   transform:translateX(calc(var(--track-w,560px) * var(--p,0)));
   transition:transform .42s var(--ease-out);
 }
 .bubble{
-  position:absolute; bottom:34px;
+  position:absolute; bottom:30px;
   left:calc(12px + var(--track-w,560px) * var(--p,0));
   transform:translateX(-50%);
-  background:#fff; border-radius:72px; padding:3px 12px;
-  font-size:11px; letter-spacing:.02em; text-transform:uppercase; opacity:.9;
+  background:#fff; border-radius:72px; padding:0 12px; height:22px; line-height:22px;
+  font-size:11px; letter-spacing:.02em; text-transform:uppercase; color:rgba(23,23,56,.8);
   white-space:nowrap;
   transition:left .42s var(--ease-out);
 }
 .bubble::after{
-  content:''; position:absolute; left:50%; bottom:-5px; transform:translateX(-50%);
-  border:3px solid transparent; border-top-color:#fff; border-bottom:none;
+  content:''; position:absolute; left:50%; bottom:-2.5px; transform:translateX(-50%);
+  border:2.6px solid transparent; border-top:4.5px solid #fff; border-bottom:none;
 }
 .next{
   position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
@@ -184,8 +184,8 @@ body{
   .comment{display:none !important}
   .pill{height:26px}
   .pill .track{left:12px; right:12px; top:10px; height:4px}
-  .pill .knob{top:6px; width:10px; height:10px}
-  .bubble{bottom:30px}
+  .pill .knob{top:6px; left:7px; width:10px; height:10px; border-width:2px}
+  .bubble{bottom:27px}
   .dock{bottom:calc(28px + env(safe-area-inset-bottom,0px)); width:calc(100vw - 32px)}
   .next button{width:100%; max-width:326px}
   .final{padding:56px 20px}
