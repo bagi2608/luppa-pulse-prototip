@@ -365,7 +365,7 @@ body{
 
 <main class="stream" id="stream"></main>
 
-<div class="nav" id="nav"><button id="backBtn" class="secondary" type="button" hidden>Back</button><button id="nextBtn" type="button">Next page</button><div class="nav-note" id="navNote" role="alert" aria-live="polite">Sva pitanja su obavezna</div></div>
+<div class="nav" id="nav"><button id="backBtn" class="secondary" type="button" hidden>Nazad</button><button id="nextBtn" type="button">Sledeća strana</button><div class="nav-note" id="navNote" role="alert" aria-live="polite">Sva pitanja su obavezna</div></div>
 
 <div class="page-pin" id="pagePin"></div>
 
@@ -451,7 +451,7 @@ $(function(){
         $(el).css({transition:'opacity .3s var(--ease-out), transform .3s var(--ease-out), min-height .42s var(--ease-out)', opacity:1, transform:'none'});
       }, 60 + i*50);
     });
-    $('#nextBtn').html((page < PAGES-1 ? 'Next page' : 'Finish')+'<span class="nb-count">'+(page+1)+' / '+PAGES+'</span>');
+    $('#nextBtn').html((page < PAGES-1 ? 'Sledeća strana' : 'Završi')+'<span class="nb-count">'+(page+1)+' / '+PAGES+'</span>');
     $('#backBtn').prop('hidden', page === 0);
     onScroll();
   }
@@ -772,7 +772,8 @@ $(function(){
     if(pageCount(page) < PER){
       // nisu sva pitanja odgovorena: ostaje na strani i ispod dugmeta pise napomena
       $('#navNote').addClass('on');
-      $('.card').not('.final').each(function(){ if(answers[$(this).data('i')] === undefined) $(this).addClass('missing'); });
+      var $missing = $('.card').not('.final').filter(function(){ return answers[$(this).data('i')] === undefined; }).addClass('missing');
+      $('html,body').animate({scrollTop: $missing.first().offset().top - 90}, 420);
     } else if(page < PAGES-1){
       page++;
       renderPage();
