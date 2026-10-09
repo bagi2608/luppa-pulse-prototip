@@ -62,7 +62,8 @@ body{
 .edge{font-size:12px; white-space:nowrap; width:92px}
 .edge.right{text-align:left}
 .edge.left{text-align:right}
-.scale{display:flex; gap:1px}
+.scale{display:flex; gap:1px; touch-action:pan-y; user-select:none; -webkit-user-select:none}
+.scale.dragging .seg{cursor:grabbing}
 .seg{
   width:105px; height:20px; background:var(--idle);
   cursor:pointer; position:relative;
@@ -267,10 +268,10 @@ $(function(){
 
   var answers = {};
 
-  function paint($scale, upTo){ // upTo: -1 clears
+  function paint($scale, upTo, stagger){ // upTo: -1 clears; stagger: kockice se pale redom
     $scale.find('.seg').each(function(k){
       var bg = k <= upTo ? COLORS[k] : (k===5 ? 'var(--idle-last)' : 'var(--idle)');
-      $(this).css('background', bg);
+      $(this).css({'transition-delay': stagger && k <= upTo ? (k*35)+'ms' : '0ms', background: bg});
     });
   }
 
@@ -287,17 +288,35 @@ $(function(){
     paint($scale, answers[i] !== undefined ? answers[i] : -1);
   });
 
-  // click
-  $stream.on('click','.seg',function(){
-    var v = +$(this).data('v'),
-        $card = $(this).closest('.card'),
-        i = +$card.data('i'),
-        isNew = answers[i] === undefined;
+  // klik + prevlacenje (swipe) preko kockica, kao na Swiperu
+  function choose($card, v, stagger){
+    var i = +$card.data('i'), isNew = answers[i] === undefined;
+    if(answers[i] === v) return;
     answers[i] = v;
-    paint($card.find('.scale'), v);
+    paint($card.find('.scale'), v, stagger);
     $card.find('.seg').removeClass('hovered');
     $card.addClass('answered').find('.answer-line').text('Odgovor: '+LABELS[v]);
     if(isNew) updateProgress(true);
+  }
+  var drag = null;
+  $stream.on('pointerdown','.seg',function(e){
+    if(e.pointerType==='mouse' && e.button!==0) return;
+    var $card = $(this).closest('.card');
+    drag = {$card:$card, $scale:$card.find('.scale'), moved:false};
+    drag.$scale.addClass('dragging');
+    choose($card, +$(this).data('v'), true);
+  });
+  $(document).on('pointermove',function(e){
+    if(!drag) return;
+    var el = document.elementFromPoint(e.clientX, e.clientY), $seg = $(el).closest('.seg');
+    if(!$seg.length || !$.contains(drag.$scale[0], $seg[0])) return;
+    drag.moved = true;
+    choose(drag.$card, +$seg.data('v'), false);
+  });
+  $(document).on('pointerup pointercancel',function(){
+    if(!drag) return;
+    drag.$scale.removeClass('dragging');
+    drag = null;
   });
 
   // ---------- progress ----------
