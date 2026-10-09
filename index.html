@@ -159,6 +159,7 @@ body{
 }
 .next{
   position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  gap:12px;
   opacity:0; pointer-events:none; transform:translateY(16px) scale(.97);
   transition:opacity .26s var(--ease-drawer) .06s, transform .26s var(--ease-drawer) .06s;
 }
@@ -172,6 +173,13 @@ body{
   transition:transform .14s var(--ease-out);
 }
 .next button:active{transform:scale(.96)}
+.next button[hidden]{display:none}
+.next .nb-count{margin-left:10px; padding-left:10px; border-left:1px solid rgba(255,255,255,.35); font-weight:500; opacity:.85; white-space:nowrap}
+.next button.secondary{
+  background:transparent; color:var(--ink); box-shadow:none; border:1.5px solid var(--ink);
+  padding:0 28px; transition:transform .14s var(--ease-out), background .15s ease;
+}
+.next button.secondary:hover{background:rgba(23,23,56,.06)}
 /* final card */
 .final{
   display:none; text-align:center; padding:80px 40px;
@@ -307,7 +315,10 @@ body{
   .pill .knob{top:10px; width:16px; height:16px; border-width:3px}
   .bubble{bottom:37px; height:26px; line-height:26px; padding:0 14px}
   .dock{bottom:calc(28px + env(safe-area-inset-bottom,0px)); width:calc(100vw - 32px)}
-  .next button{width:100%; max-width:326px}
+  .next button{padding:0 20px}
+  #nextBtn{flex:1 1 auto; max-width:240px}
+  #backBtn{flex:0 0 auto}
+  .next:has(#backBtn[hidden]) #nextBtn{max-width:326px}
   .final{padding:56px 20px}
   .card.qt{padding:22px 16px; border-radius:20px}
   .qn{flex-basis:32px; font-size:16px; line-height:22px}
@@ -345,7 +356,7 @@ body{
 
 <div class="dock" id="dock">
   <div class="pill" id="pill"></div>
-  <div class="next"><button id="nextBtn">Next page</button></div>
+  <div class="next"><button id="backBtn" class="secondary" type="button" hidden>Back</button><button id="nextBtn" type="button">Next page</button></div>
 </div>
 
 <script>
@@ -423,7 +434,8 @@ $(function(){
         $(el).css({transition:'opacity .3s var(--ease-out), transform .3s var(--ease-out), min-height .42s var(--ease-out)', opacity:1, transform:'none'});
       }, 60 + i*50);
     });
-    $('#nextBtn').text(page < PAGES-1 ? 'Next page' : 'Finish');
+    $('#nextBtn').html((page < PAGES-1 ? 'Next page' : 'Finish')+'<span class="nb-count">'+(page+1)+' / '+PAGES+'</span>');
+    $('#backBtn').prop('hidden', page === 0);
     onScroll();
   }
   // ---------- posebni tipovi pitanja (Figma: 00 Question types) ----------
@@ -453,6 +465,17 @@ $(function(){
       }).join('')+'</ol>';
     }
     $stream.append('<section class="card qt qt-'+sp.type+'" data-i="'+i+'" style="opacity:0;transform:translateY(14px)">'+head+'<div class="qbody">'+body+'</div></section>');
+    var a = answers[i];
+    if(a !== undefined){
+      var $c = $stream.children().last().addClass('answered');
+      if(sp.type === 'radio') $c.find('input').eq(a).prop('checked', true);
+      else if(sp.type === 'check') a.forEach(function(k){ $c.find('input').eq(k).prop('checked', true); });
+      else if(sp.type === 'open') $c.find('textarea').val(a);
+      else if(sp.type === 'rank'){
+        var $ol = $c.find('.rank');
+        a.forEach(function(t){ $ol.append($ol.children().filter(function(){ return $(this).find('.rk-t').text() === t; })); });
+      }
+    }
   }
   function setAnswer(i, val, $card){
     var isNew = answers[i] === undefined;
@@ -718,6 +741,15 @@ $(function(){
     }
   }
   $(window).on('scroll resize', onScroll); onScroll();
+
+  // Back: na prethodnu stranu (odgovori i komentari ostaju)
+  $('#backBtn').on('click', function(){
+    if(page === 0) return;
+    page--;
+    renderPage();
+    window.scrollTo(0,0);
+    renderBar();
+  });
 
   // Next page
   $('#nextBtn').on('click', function(){
