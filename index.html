@@ -761,7 +761,11 @@ $(function(){
 
   // Next page
   $('#nextBtn').on('click', function(){
-    if(page < PAGES-1){
+    if(pageCount(page) < PER){
+      // nisu sva pitanja odgovorena: ostaje na strani i skrola do prvog neodgovorenog (bez poruke)
+      var missing = $('.card').not('.final').filter(function(){ return answers[$(this).data('i')] === undefined; }).first();
+      $('html,body').animate({scrollTop: missing.offset().top - 80}, 420);
+    } else if(page < PAGES-1){
       page++;
       renderPage();
       window.scrollTo(0,0);
