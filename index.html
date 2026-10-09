@@ -156,6 +156,11 @@ body{
 
 /* ===== progress celog upitnika: 3 strane, diskretni delovi ===== */
 .pill .track{background:none; overflow:visible}
+.pill .knob{
+  position:absolute; top:8px; left:0; width:12px; height:12px;
+  background:#fff; border:3px solid #FF521B; border-radius:50%; z-index:3;
+  transition:left .42s var(--ease-out);
+}
 .bubble{z-index:4}
 .pt-base{position:absolute; inset:0; border-radius:2px; background:rgba(216,216,216,.5)}
 .pt-fill{
@@ -204,6 +209,7 @@ body{
   .comment{display:none !important}
   .pill{height:26px}
   .pill .track{left:12px; right:12px; top:8px; height:6px}
+  .pill .knob{top:6px; width:10px; height:10px; border-width:2px}
   .bubble{bottom:27px}
   .dock{bottom:calc(28px + env(safe-area-inset-bottom,0px)); width:calc(100vw - 32px)}
   .next button{width:100%; max-width:326px}
@@ -411,6 +417,7 @@ $(function(){
       var $s = $('<div class="pt-seg">').appendTo(bar.track);
       bar.segs.push({$s:$s, $f:$('<div class="pt-fill">').appendTo($s)});
     }
+    bar.knob = $('<div class="knob" id="knob">').appendTo($pill);
     bar.bubble = $('<div class="bubble" id="bubble">').text(bubbleText).appendTo($pill);
   }
   function renderBar(){
@@ -422,6 +429,7 @@ $(function(){
       sg.$f.css({width:(pageCount(k)/PER*100)+'%', backgroundSize:W+'px 100%', backgroundPosition:(-left)+'px 0'});
     });
     var x = page*(w+gap) + pageCount(page)/PER*w;
+    bar.knob.css('left', (tl + x - bar.knob.outerWidth()/2)+'px');
     bar.bubble.css('left', (tl + x)+'px');
   }
   $(window).on('resize', function(){ renderBar(); });
