@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Luppa — Pulse upitnik</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<style>
+:root{
+  --bg:#F5F1EE; --ink:#171738;
+  --c1:#FFF0EB; --c2:#FADCD2; --c3:#FFB397; --c4:#FF9E7A; --c5:#FF885E; --c6:#FF521B;
+  --idle:#E7E7E7; --idle-last:rgba(209,209,208,.5);
+  --ease-out:cubic-bezier(.23,1,.32,1);
+  --ease-drawer:cubic-bezier(.32,.72,0,1);
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:'Inter',system-ui,sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+/* ---------- header ---------- */
+.hero{
+  position:fixed; top:env(safe-area-inset-top,0px); left:0; right:0;
+  padding-top:47px; text-align:center; z-index:0; pointer-events:none;
+  transition:opacity .2s linear, transform .2s linear;
+}
+.hero img{height:37px}
+.hero h1{font-size:28px; line-height:25px; font-weight:400; margin:56px 0 0}
+/* ---------- cards ---------- */
+.stream{
+  position:relative; z-index:1;
+  max-width:1020px; margin:0 auto;
+  padding:245px 16px 220px;
+}
+.card{
+  background:#fff; border:1px solid rgba(0,0,0,.16); border-radius:24px;
+  padding:56px 40px 64px; margin-bottom:12px;
+  min-height:324px;
+  display:flex; flex-direction:column; align-items:center; justify-content:flex-start;
+  transition:min-height .42s var(--ease-out);
+}
+.card.answered{min-height:400px}
+.q{
+  font-size:23px; line-height:30px; letter-spacing:-.23px;
+  text-align:center; max-width:648px; margin:0 0 44px;
+}
+.answer-line{
+  height:20px; margin:-24px 0 20px;
+  font-size:13.7px; letter-spacing:-.68px; text-align:center;
+  opacity:0; transform:translateY(4px);
+  transition:opacity .26s var(--ease-out), transform .26s var(--ease-out);
+}
+.card.answered .answer-line{opacity:1; transform:none}
+/* scale row */
+.scale-row{display:flex; align-items:center; gap:14px; width:100%; justify-content:center}
+.edge{font-size:12px; white-space:nowrap; width:92px}
+.edge.right{text-align:left}
+.edge.left{text-align:right}
+.scale{display:flex; gap:1px}
+.seg{
+  width:105px; height:20px; background:var(--idle);
+  cursor:pointer; position:relative;
+  transition:background .15s ease, transform .14s var(--ease-out);
+}
+.seg:last-child{background:var(--idle-last)}
+.seg:first-child{border-radius:305px 0 0 305px}
+.seg:last-child{border-radius:0 305px 305px 0}
+.seg:active{transform:scaleY(.85)}
+.seg .tip{
+  position:absolute; top:26px; left:50%; transform:translateX(-50%);
+  font-size:12px; letter-spacing:-.6px; white-space:nowrap;
+  opacity:0; transition:opacity .15s ease; pointer-events:none;
+}
+.scale:hover .seg.hovered .tip{opacity:1}
+/* comment */
+.comment{
+  width:100%; max-width:648px; margin-top:40px;
+  opacity:0; transform:translateY(6px) scale(.97); visibility:hidden;
+  transition:opacity .26s var(--ease-out) .08s, transform .26s var(--ease-out) .08s, visibility 0s .34s;
+}
+.card.answered .comment{opacity:1; transform:none; visibility:visible; transition:opacity .26s var(--ease-out) .08s, transform .26s var(--ease-out) .08s}
+.comment textarea{
+  width:100%; min-height:64px; resize:vertical;
+  border:1px solid rgba(0,0,0,.16); border-radius:12px;
+  padding:12px 14px; font:400 14px/1.5 'Inter',sans-serif; color:var(--ink);
+  background:#fff; outline:none;
+}
+.comment textarea:focus{border-color:var(--c6)}
+/* ---------- bottom veil + progress ---------- */
+.veil{
+  position:fixed; left:0; right:0; bottom:0; height:168px; z-index:2;
+  background:linear-gradient(to top, var(--bg) 13.4%, rgba(245,241,238,0) 100%);
+  pointer-events:none; transition:opacity .3s linear;
+}
+.dock{
+  position:fixed; left:50%; transform:translateX(-50%);
+  bottom:calc(37px + env(safe-area-inset-bottom,0px)); z-index:3;
+}
+.pill{
+  width:589px; max-width:calc(100vw - 32px); height:29px;
+  background:var(--bg); border-top:1px solid rgba(0,0,0,.04); border-radius:15px;
+  box-shadow:0 1px 2px rgba(0,0,0,.1),0 4px 4px rgba(0,0,0,.09),0 8px 5px rgba(0,0,0,.05),0 14px 6px rgba(0,0,0,.01);
+  position:relative;
+  transition:transform .18s var(--ease-out), opacity .18s var(--ease-out);
+}
+.pill .track{
+  position:absolute; left:12px; right:17px; top:11px; height:6px;
+  border-radius:3px; background:rgba(23,23,56,.08); overflow:hidden;
+}
+.pill .fill{
+  position:absolute; inset:0;
+  background:linear-gradient(90deg,#E0E0FF,#171738);
+  transform-origin:left; transform:scaleX(var(--p,0));
+  transition:transform .42s var(--ease-out);
+}
+.pill .knob{
+  position:absolute; top:8px; left:9px; width:12px; height:12px;
+  background:#fff; border:2px solid var(--ink); border-radius:50%;
+  transform:translateX(calc(var(--track-w,560px) * var(--p,0)));
+  transition:transform .42s var(--ease-out);
+}
+.bubble{
+  position:absolute; bottom:34px;
+  left:calc(12px + var(--track-w,560px) * var(--p,0));
+  transform:translateX(-50%);
+  background:#fff; border-radius:72px; padding:3px 12px;
+  font-size:11px; letter-spacing:.02em; text-transform:uppercase; opacity:.9;
+  white-space:nowrap;
+  transition:left .42s var(--ease-out);
+}
+.bubble::after{
+  content:''; position:absolute; left:50%; bottom:-5px; transform:translateX(-50%);
+  border:3px solid transparent; border-top-color:#fff; border-bottom:none;
+}
+.next{
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  opacity:0; pointer-events:none; transform:translateY(16px) scale(.97);
+  transition:opacity .26s var(--ease-drawer) .06s, transform .26s var(--ease-drawer) .06s;
+}
+.dock.done .pill{opacity:0; transform:translateY(12px)}
+.dock.done .next{opacity:1; pointer-events:auto; transform:none}
+.next button{
+  height:44px; padding:0 36px; border:none; border-radius:24px; cursor:pointer;
+  color:#fff; font:600 15px 'Inter',sans-serif;
+  background:linear-gradient(180deg,#21214D,#171738);
+  box-shadow:0 8px 20px rgba(23,23,56,.25);
+  transition:transform .14s var(--ease-out);
+}
+.next button:active{transform:scale(.96)}
+/* final card */
+.final{
+  display:none; text-align:center; padding:80px 40px;
+}
+.final h2{font-weight:500; font-size:23px; margin:0}
+
+/* touch: nema hover tooltipa — odgovor vec pise iznad skale */
+@media (hover:none){ .seg .tip{display:none !important} }
+/* ---------- mobile (po Figma sekciji Screens — Mobile, 2670:2) ---------- */
+@media (max-width: 640px){
+  .hero{padding-top:32px}
+  .hero img{height:27px}
+  .hero h1{font-size:20px; line-height:25px; margin:36px 16px 0}
+  .stream{padding:150px 16px 200px}
+  .card{padding:19px 16px; border-radius:20px; min-height:0; margin-bottom:12px}
+  .card.answered{min-height:0}
+  .q{font-size:17px; line-height:22px; letter-spacing:-.17px; margin-bottom:20px; font-weight:500; text-align:left; width:100%}
+  .answer-line{font-size:15px; font-weight:500; line-height:14px; letter-spacing:-.4px; margin:-8px 0 16px; height:auto}
+  /* skala: segmenti FILL 36px, gap 2, labele Medium 14 (Figma 2670:42) */
+  .scale-row{flex-wrap:wrap; gap:10px 0}
+  .scale{order:1; flex:1 0 100%; gap:2px}
+  .seg{flex:1 1 0; width:auto; height:36px}
+  .seg .tip{display:none}
+  .edge{width:auto; font-size:14px; font-weight:500; padding-top:3px}
+  .edge.left{opacity:.74}
+  .edge.right{opacity:.7}
+  .edge.left{order:2; margin-right:auto; text-align:left}
+  .edge.right{order:3; margin-left:auto; text-align:left}
+  .comment{display:none !important}
+  .pill{height:26px}
+  .pill .track{left:12px; right:12px; top:10px; height:4px}
+  .pill .knob{top:6px; width:10px; height:10px}
+  .bubble{bottom:30px}
+  .dock{bottom:calc(28px + env(safe-area-inset-bottom,0px)); width:calc(100vw - 32px)}
+  .next button{width:100%; max-width:326px}
+  .final{padding:56px 20px}
+  .final h2{font-size:18px}
+}
+
+@media (prefers-reduced-motion:reduce){
+  *{transition-duration:.01ms !important}
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){/* prototype stays light by design */}
+}
+</style>
+</head>
+<body>
+
+<div class="hero" id="hero">
+  <img src="data:image/png;base64,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" alt="luppa">
+  <h1>Hello 🖐️ Daniel lets begin.</h1>
+</div>
+
+<main class="stream" id="stream"></main>
+
+<div class="veil" id="veil"></div>
+
+<div class="dock" id="dock">
+  <div class="pill" id="pill">
+    <div class="track"><div class="fill" id="fill"></div></div>
+    <div class="knob" id="knob"></div>
+    <div class="bubble" id="bubble">0/5</div>
+  </div>
+  <div class="next"><button id="nextBtn">Next page</button></div>
+</div>
+
+<script>
+$(function(){
+  var COLORS = ['#FFF0EB','#FADCD2','#FFB397','#FF9E7A','#FF885E','#FF521B'];
+  var LABELS = [
+    'U potpunosti se ne slažem','Uglavnom se ne slažem','Delimično se ne slažem',
+    'Delimično se slažem','Uglavnom se slažem','U potpunosti se slažem'
+  ];
+  var QUESTIONS = [
+    'Zadovoljan/na sam uslovima rada (platom, finansijskim i nefinansijskim benefitima i opremom za rad).',
+    'Imam dovoljno slobode u načinu na koji obavljam svoj posao.',
+    'Moj menadžer mi daje korisne povratne informacije o mom radu.',
+    'Komunikacija unutar mog tima je otvorena i pravovremena.',
+    'Vidim mogućnost za lični i profesionalni razvoj u ovoj kompaniji.'
+  ];
+  var MILESTONES = {2:'Great start!',3:'Halfway there!',4:'Just a few questions left!',5:'All done 🎉'};
+
+  var $stream = $('#stream');
+  QUESTIONS.forEach(function(q,i){
+    var segs = COLORS.map(function(_,k){
+      return '<div class="seg" data-v="'+k+'"><span class="tip">'+LABELS[k]+'</span></div>';
+    }).join('');
+    $stream.append(
+      '<section class="card" data-i="'+i+'" style="opacity:0;transform:translateY(14px)">'+
+        '<p class="q">'+q+'</p>'+
+        '<div class="answer-line"></div>'+
+        '<div class="scale-row">'+
+          '<span class="edge left">Ne slažem se</span>'+
+          '<div class="scale">'+segs+'</div>'+
+          '<span class="edge right">Slažem se</span>'+
+        '</div>'+
+        '<div class="comment"><textarea placeholder="Komentar (opciono)…"></textarea></div>'+
+      '</section>'
+    );
+  });
+  $stream.append('<section class="card final" id="finalCard"><h2>Page 2 would load here</h2></section>');
+
+  // stagger enter
+  $('.card').not('.final').each(function(i){
+    var el = this;
+    setTimeout(function(){
+      $(el).css({transition:'opacity .3s var(--ease-out), transform .3s var(--ease-out), min-height .42s var(--ease-out)', opacity:1, transform:'none'});
+    }, 60 + i*50);
+  });
+
+  var answers = {};
+
+  function paint($scale, upTo){ // upTo: -1 clears
+    $scale.find('.seg').each(function(k){
+      var bg = k <= upTo ? COLORS[k] : (k===5 ? 'var(--idle-last)' : 'var(--idle)');
+      $(this).css('background', bg);
+    });
+  }
+
+  // hover
+  $stream.on('mouseenter','.seg',function(){
+    var $s = $(this), $scale = $s.closest('.scale'), i = +$s.closest('.card').data('i');
+    $scale.find('.seg').removeClass('hovered');
+    $s.addClass('hovered');
+    paint($scale, +$s.data('v'));
+  });
+  $stream.on('mouseleave','.scale',function(){
+    var $scale = $(this), i = +$scale.closest('.card').data('i');
+    $scale.find('.seg').removeClass('hovered');
+    paint($scale, answers[i] !== undefined ? answers[i] : -1);
+  });
+
+  // click
+  $stream.on('click','.seg',function(){
+    var v = +$(this).data('v'),
+        $card = $(this).closest('.card'),
+        i = +$card.data('i'),
+        isNew = answers[i] === undefined;
+    answers[i] = v;
+    paint($card.find('.scale'), v);
+    $card.find('.seg').removeClass('hovered');
+    $card.addClass('answered').find('.answer-line').text('Odgovor: '+LABELS[v]);
+    if(isNew) updateProgress(true);
+  });
+
+  // ---------- progress ----------
+  var total = QUESTIONS.length, msgTimer;
+  function count(){ return Object.keys(answers).length; }
+  function measure(){
+    var w = $('#pill .track').width();
+    document.documentElement.style.setProperty('--track-w', w+'px');
+    $('.pill,.bubble,.knob').css('--track-w', w+'px');
+  }
+  measure(); $(window).on('resize', measure);
+
+  function setBubble(text){ $('#bubble').text(text); }
+  function updateProgress(announce){
+    var n = count(), p = n/total;
+    $('#pill').css('--p', p);
+    $('#fill,#knob,.bubble').css('--p', p);
+    setBubble(n+'/'+total);
+    if(announce && MILESTONES[n]){
+      clearTimeout(msgTimer);
+      setBubble(MILESTONES[n]);
+      msgTimer = setTimeout(function(){ setBubble(count()+'/'+total); }, 2200);
+    }
+  }
+  updateProgress(false);
+
+  // idle poruke
+  setInterval(function(){
+    if(count()<total){
+      var prev = count()+'/'+total;
+      setBubble('Your answers are anonymous');
+      setTimeout(function(){ setBubble(count()+'/'+total); }, 2600);
+    }
+  }, 12000);
+
+  // ---------- scroll: header fade + dock swap ----------
+  function onScroll(){
+    var y = $(window).scrollTop();
+    var t = Math.min(1, y/160);
+    $('#hero').css({opacity: 1 - t*0.88, transform:'translateY('+(-t*14)+'px)'});
+
+    var doc = document.documentElement;
+    var atEnd = y + window.innerHeight >= doc.scrollHeight - 40;
+    $('#dock').toggleClass('done', atEnd);
+    $('#veil').css('opacity', atEnd ? 0 : 1);
+  }
+  $(window).on('scroll', onScroll); onScroll();
+
+  // Next page
+  $('#nextBtn').on('click', function(){
+    if(count() < total){
+      var missing = $('.card').not('.final').filter(function(){ return answers[$(this).data('i')] === undefined; }).first();
+      $('html,body').animate({scrollTop: missing.offset().top - 80}, 420);
+      clearTimeout(msgTimer);
+      setBubble('Answer all questions first');
+      msgTimer = setTimeout(function(){ setBubble(count()+'/'+total); }, 2200);
+    } else {
+      $('#finalCard').show();
+      $('html,body').animate({scrollTop: $('#finalCard').offset().top - 120}, 420);
+    }
+  });
+});
+</script>
+</body>
+</html>
