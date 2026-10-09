@@ -237,31 +237,6 @@ body{
 .rk.dragging .rk-box{border-color:var(--ink); cursor:grabbing; box-shadow:0 6px 16px rgba(23,23,56,.12); background:rgba(23,23,56,.09)}
 .rk-grip{flex:0 0 28px; height:36px; margin-right:-8px; display:grid; place-items:center; touch-action:none; opacity:.7}
 .rk-grip svg{display:block}
-/* Likert sa krugovima */
-.lk{display:flex; align-items:center; justify-content:center; gap:28px; padding:0 0 30px}
-.lk-edge{flex:0 0 96px; white-space:nowrap; font:600 16px/20px 'Inter',sans-serif}
-.lk-edge:first-child{text-align:right}
-.lk-row{display:flex; align-items:center; gap:22px}
-.lk-w{position:relative; display:flex; align-items:center; justify-content:center}
-.lk-c{
-  display:grid; place-items:center; padding:0; border:1.5px solid var(--ink); border-radius:50%; background:#fff; cursor:pointer;
-  transition:background .15s ease, border-color .15s ease, transform .15s var(--ease-out); -webkit-tap-highlight-color:transparent;
-}
-.lk-c:hover{background:rgba(255,82,27,.1)}
-.lk-c:active{transform:scale(.94)}
-.lk-c:focus-visible{outline:3px solid rgba(255,82,27,.35); outline-offset:2px}
-.lk-c.s1{width:41px; height:41px} .lk-c.s2{width:32px; height:32px} .lk-c.s3{width:22px; height:22px}
-.lk-c.on{background:var(--c6); border-color:var(--c6)}
-.lk-c.on::after{content:''; width:5px; height:9px; margin-top:-2px; border:solid #fff; border-width:0 1.8px 1.8px 0; transform:rotate(45deg)}
-.lk-div{width:1px; height:34px; background:rgba(23,23,56,.25)}
-.lk-sel{
-  position:absolute; top:calc(100% + 8px); left:50%; transform:translateX(-50%); white-space:nowrap;
-  font:600 16px/20px 'Inter',sans-serif; opacity:0; transition:opacity .2s var(--ease-out);
-}
-.lk-w.on .lk-sel{opacity:1}
-.lk-w.first .lk-sel{left:0; transform:none}
-.lk-w.last .lk-sel{left:auto; right:0; transform:none}
-
 /* touch: nema hover tooltipa — odgovor vec pise iznad skale */
 @media (hover:none){ .seg .tip{display:none !important} }
 /* ---------- mobile (po Figma sekciji Screens — Mobile, 2670:2) ---------- */
@@ -327,14 +302,6 @@ body{
   .rk{height:50px}
   .rk-box{font-size:15px; padding:0 8px 0 14px}
   .rk-grip{flex-basis:44px; height:44px; margin-right:-4px}
-  .lk{flex-wrap:wrap; gap:10px 0; padding-bottom:62px}
-  .lk-row{order:1; flex:1 0 100%; justify-content:space-between; gap:0; padding:0 2px}
-  .lk-edge{flex:0 0 auto; font-size:14px; font-weight:500; opacity:.75}
-  .lk-edge:first-child{order:2; margin-right:auto; text-align:left}
-  .lk-edge:last-child{order:3; margin-left:auto}
-  .lk-c.s1{width:40px; height:40px} .lk-c.s2{width:32px; height:32px} .lk-c.s3{width:24px; height:24px}
-  .lk-sel{font-size:14px; top:calc(100% + 40px)}
-  .final h2{font-size:18px}
 }
 
 @media (prefers-reduced-motion:reduce){
@@ -449,8 +416,7 @@ $(function(){
        options:['Dodatno zdravstveno osiguranje','Edukacija i kursevi','Rad od kuće','Sport i rekreacija','Dodatni slobodni dani','Mentorstvo']},
     7:{type:'open', text:'Šta biste promenili u svom radnom okruženju?', hint:'Odgovor je anoniman, napišite koliko god želite.'},
     8:{type:'rank', text:'Poređajte po važnosti sledeće kategorije, pri čemu je 1 najvažnija:', hint:'Prevucite stavke da promenite redosled.',
-       items:['Inovacije i promena','Komunikacija','Plata i benefiti','Timski duh','Razvoj karijere']},
-    9:{type:'likert', text:'Preporučio/la bih ovu kompaniju prijateljima kao dobro mesto za rad.'}
+       items:['Inovacije i promena','Komunikacija','Plata i benefiti','Timski duh','Razvoj karijere']}
   };
   var esc = function(t){ return $('<div>').text(t).html(); };
   var GRIP = '<svg width="12" height="18" viewBox="0 0 12 18" fill="none" stroke="#171738" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4.5 6 1.5l3 3M3 13.5l3 3 3-3M2 7.5h8M2 10.5h8"/></svg>';
@@ -467,12 +433,6 @@ $(function(){
       body = '<ol class="rank">'+sp.items.map(function(t){
         return '<li class="rk" tabindex="0" aria-label="'+esc(t)+', strelicama gore i dole menjate redosled"><span class="rk-box"><span class="rk-t">'+esc(t)+'</span><span class="rk-grip" aria-hidden="true">'+GRIP+'</span></span></li>';
       }).join('')+'</ol>';
-    } else if(sp.type === 'likert'){
-      var sizes = ['s1','s2','s3','s3','s2','s1'];
-      body = '<div class="lk"><span class="lk-edge">Ne slažem se</span><div class="lk-row" role="radiogroup">'+LABELS.map(function(l,k){
-        return (k===3 ? '<span class="lk-div"></span>' : '')+
-          '<span class="lk-w'+(k===0?' first':k===5?' last':'')+'"><button type="button" class="lk-c '+sizes[k]+'" data-v="'+k+'" role="radio" aria-checked="false" aria-label="'+esc(l)+'"></button><span class="lk-sel">'+esc(l)+'</span></span>';
-      }).join('')+'</div><span class="lk-edge">Slažem se</span></div>';
     }
     $stream.append('<section class="card qt qt-'+sp.type+'" data-i="'+i+'" style="opacity:0;transform:translateY(14px)">'+head+'<div class="qbody">'+body+'</div></section>');
   }
@@ -592,12 +552,6 @@ $(function(){
   $stream.on('input','.open-ta', function(){
     var $c = $(this).closest('.card'), v = $.trim(this.value);
     setAnswer(+$c.data('i'), v ? v : undefined, $c);
-  });
-  $stream.on('click','.lk-c', function(){
-    var $c = $(this).closest('.card'), v = +$(this).data('v');
-    $c.find('.lk-c').removeClass('on').attr('aria-checked','false').closest('.lk-w').removeClass('on');
-    $(this).addClass('on').attr('aria-checked','true').closest('.lk-w').addClass('on');
-    setAnswer(+$c.data('i'), v, $c);
   });
   // rangiranje: prevlacenje (misem ili prstom za ikonicu) i strelice na tastaturi
   var rk = null;
