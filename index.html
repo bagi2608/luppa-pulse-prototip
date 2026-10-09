@@ -97,7 +97,7 @@ body{
 .comment-note{height:18px; margin-top:6px; font-size:12px; text-align:right; color:rgba(23,23,56,.6); opacity:0; transition:opacity .2s var(--ease-out)}
 .comment-note.on{opacity:1}
 .comment-note.ok{color:#1F8A4C}
-.comment-toggle, .comment-save{display:none}
+.comment-toggle{display:none}
 .comment-body{display:block}
 /* ---------- bottom veil + progress ---------- */
 .veil{
@@ -228,15 +228,14 @@ body{
   .comment.open .comment-toggle .ct-chev{transform:translateY(2px) rotate(-135deg)}
   .comment.has .comment-toggle{border-color:rgba(23,23,56,.4)}
   .comment.has .ct-opt{display:none}
+  /* otvoreno: bez naslova, ostaje samo mala strelica za zatvaranje */
+  .comment.open .comment-toggle{min-height:28px; padding:0; border:0; background:none; justify-content:flex-end}
+  .comment.open .ct-label, .comment.open .ct-opt{display:none}
+  .comment.open .comment-inner > textarea{margin-top:4px}
   .comment-body{display:grid; grid-template-rows:0fr; transition:grid-template-rows .3s var(--ease-out)}
   .comment.open .comment-body{grid-template-rows:1fr}
   .comment-inner{overflow:hidden; min-height:0}
   .comment-inner > textarea{margin-top:8px; font-size:16px}
-  .comment-save{
-    display:block; margin:8px 0 0 auto; height:36px; padding:0 18px; border:0; border-radius:18px; cursor:pointer;
-    background:var(--ink); color:#fff; font:600 14px 'Inter',sans-serif;
-  }
-  .comment-save:active{transform:scale(.96)}
   .pill{height:36px; border-radius:18px}
   .pill .track{left:16px; right:16px; top:13px; height:10px}
   .pill .track, .pt-seg{border-radius:5px}
@@ -370,7 +369,6 @@ $(function(){
           '<div class="comment-body"><div class="comment-inner">'+
             '<textarea placeholder="Komentar (opciono) — Enter za čuvanje, Shift+Enter za novi red"></textarea>'+
             '<div class="comment-note"></div>'+
-            '<button type="button" class="comment-save">Sačuvaj</button>'+
           '</div></div>'+
         '</div>'+
       '</section>'
@@ -411,7 +409,11 @@ $(function(){
     e.preventDefault();
     saveComment($(this));
   });
-  $stream.on('click','.comment-save',function(){ saveComment($(this).siblings('textarea')); });
+  // bez dugmeta: komentar se cuva i kad se klikne/dodirne van polja
+  $stream.on('blur','.comment textarea',function(){
+    var $ta = $(this), i = +$ta.closest('.card').data('i');
+    if($.trim($ta.val()) !== (comments[i] || '')) saveComment($ta);
+  });
   $stream.on('click','.comment-toggle',function(){
     var $c = $(this).closest('.comment'), open = !$c.hasClass('open');
     $c.toggleClass('open', open);
