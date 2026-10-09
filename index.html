@@ -160,6 +160,22 @@ body{
 }
 .final h2{font-weight:500; font-size:23px; margin:0}
 
+/* ===== progress celog upitnika: 3 strane, diskretni delovi ===== */
+.pill .track{background:none; overflow:visible}
+.pill .knob{transform:none; transition:left .42s var(--ease-out); z-index:3}
+.bubble{z-index:4}
+.pt-base{position:absolute; inset:0; border-radius:2px; background:rgba(216,216,216,.5)}
+.pt-fill{
+  position:absolute; left:0; top:0; bottom:0; border-radius:2px;
+  background-image:linear-gradient(90deg,#FFC8B4,#FF521B);
+  transition:width .42s var(--ease-out);
+}
+/* v1: diskretni delovi */
+.pt-seg{position:absolute; top:0; height:100%; border-radius:2px; background:rgba(216,216,216,.5); overflow:hidden}
+.pt-seg .pt-fill{border-radius:0}
+/* oznaka strane iznad kartica */
+.page-label{text-align:center; font-size:13px; letter-spacing:.02em; text-transform:uppercase; opacity:.55; margin:0 0 14px}
+
 /* touch: nema hover tooltipa — odgovor vec pise iznad skale */
 @media (hover:none){ .seg .tip{display:none !important} }
 /* ---------- mobile (po Figma sekciji Screens — Mobile, 2670:2) ---------- */
@@ -213,11 +229,7 @@ body{
 <div class="veil" id="veil"></div>
 
 <div class="dock" id="dock">
-  <div class="pill" id="pill">
-    <div class="track"><div class="fill" id="fill"></div></div>
-    <div class="knob" id="knob"></div>
-    <div class="bubble" id="bubble">0%</div>
-  </div>
+  <div class="pill" id="pill"></div>
   <div class="next"><button id="nextBtn">Next page</button></div>
 </div>
 
@@ -234,12 +246,35 @@ $(function(){
     'Imam dovoljno slobode u načinu na koji obavljam svoj posao.',
     'Moj menadžer mi daje korisne povratne informacije o mom radu.',
     'Komunikacija unutar mog tima je otvorena i pravovremena.',
-    'Vidim mogućnost za lični i profesionalni razvoj u ovoj kompaniji.'
+    'Vidim mogućnost za lični i profesionalni razvoj u ovoj kompaniji.',
+    'Imam jasna očekivanja u vezi sa svojim radnim zadacima.',
+    'Moj rad je prepoznat i cenjen.',
+    'Imam resurse i alate potrebne da kvalitetno obavim posao.',
+    'Opterećenje poslom mi je uglavnom podnošljivo.',
+    'Mogu da uskladim poslovne i privatne obaveze.',
+    'Verujem odlukama rukovodstva kompanije.',
+    'Razumem kako moj rad doprinosi ciljevima kompanije.',
+    'Osećam se slobodno da iznesem svoje mišljenje i ideje.',
+    'Ponosan/na sam što radim u ovoj kompaniji.',
+    'Preporučio/la bih ovu kompaniju kao dobro mesto za rad.'
   ];
-  var MILESTONES = {2:'Great start!',3:'Halfway there!',4:'Just a few questions left!',5:'All done 🎉'};
+  var PER = 5, PAGES = 3, page = 0;
 
   var $stream = $('#stream');
-  QUESTIONS.forEach(function(q,i){
+  function renderPage(){
+    $stream.empty().append('<div class="page-label">Strana '+(page+1)+' od '+PAGES+'</div>');
+    QUESTIONS.slice(page*PER, page*PER+PER).forEach(function(q,j){ appendCard(q, page*PER+j); });
+    $stream.append('<section class="card final" id="finalCard"><h2>Hvala! Upitnik je završen 🎉</h2></section>');
+    $('.card').not('.final').each(function(i){
+      var el = this;
+      setTimeout(function(){
+        $(el).css({transition:'opacity .3s var(--ease-out), transform .3s var(--ease-out), min-height .42s var(--ease-out)', opacity:1, transform:'none'});
+      }, 60 + i*50);
+    });
+    $('#nextBtn').text(page < PAGES-1 ? 'Next page' : 'Finish');
+    onScroll();
+  }
+  function appendCard(q,i){
     var segs = COLORS.map(function(_,k){
       return '<div class="seg" data-v="'+k+'"><span class="tip">'+LABELS[k]+'</span></div>';
     }).join('');
@@ -255,16 +290,12 @@ $(function(){
         '<div class="comment"><textarea placeholder="Komentar (opciono)…"></textarea></div>'+
       '</section>'
     );
-  });
-  $stream.append('<section class="card final" id="finalCard"><h2>Page 2 would load here</h2></section>');
-
-  // stagger enter
-  $('.card').not('.final').each(function(i){
-    var el = this;
-    setTimeout(function(){
-      $(el).css({transition:'opacity .3s var(--ease-out), transform .3s var(--ease-out), min-height .42s var(--ease-out)', opacity:1, transform:'none'});
-    }, 60 + i*50);
-  });
+    if(answers[i] !== undefined){
+      var $c = $stream.children().last();
+      paint($c.find('.scale'), answers[i]);
+      $c.addClass('answered').find('.answer-line').text('Odgovor: '+LABELS[answers[i]]);
+    }
+  }
 
   var answers = {};
 
@@ -320,28 +351,56 @@ $(function(){
   });
 
   // ---------- progress ----------
-  var total = QUESTIONS.length, msgTimer;
+  var total = QUESTIONS.length, msgTimer, bubbleText = '0%';
   function count(){ return Object.keys(answers).length; }
-  function measure(){
-    var w = $('#pill .track').width();
-    document.documentElement.style.setProperty('--track-w', w+'px');
-    $('.pill,.bubble,.knob').css('--track-w', w+'px');
+  function pageCount(k){
+    var c = 0;
+    for(var i=k*PER;i<k*PER+PER;i++) if(answers[i] !== undefined) c++;
+    return c;
   }
-  measure(); $(window).on('resize', measure);
-
   function pct(n){ return Math.round(n/total*100)+'%'; }
-  function setBubble(text){ $('#bubble').text(text); }
+  function setBubble(text){ bubbleText = text; $('#bubble').text(text); }
+
+  // progress celog upitnika: po jedan deo trake za svaku stranu
+  var $pill = $('#pill'), bar = {};
+  function buildBar(){
+    $pill.empty();
+    bar = {track:$('<div class="track">').appendTo($pill), segs:[]};
+    for(var k=0;k<PAGES;k++){
+      var $s = $('<div class="pt-seg">').appendTo(bar.track);
+      bar.segs.push({$s:$s, $f:$('<div class="pt-fill">').appendTo($s)});
+    }
+    bar.knob = $('<div class="knob" id="knob">').appendTo($pill);
+    bar.bubble = $('<div class="bubble" id="bubble">').text(bubbleText).appendTo($pill);
+  }
+  function renderBar(){
+    var t = bar.track[0], W = t.clientWidth, tl = t.offsetLeft;
+    var gap = 4, w = (W - gap*(PAGES-1))/PAGES;
+    bar.segs.forEach(function(sg,k){
+      var left = k*(w+gap);
+      sg.$s.css({left:left+'px', width:w+'px'});
+      sg.$f.css({width:(pageCount(k)/PER*100)+'%', backgroundSize:W+'px 100%', backgroundPosition:(-left)+'px 0'});
+    });
+    var x = page*(w+gap) + pageCount(page)/PER*w;
+    bar.knob.css('left', (tl + x - bar.knob.outerWidth()/2)+'px');
+    bar.bubble.css('left', (tl + x)+'px');
+  }
+  $(window).on('resize', function(){ renderBar(); });
+  if(document.fonts && document.fonts.ready) document.fonts.ready.then(function(){ renderBar(); });
+
   function updateProgress(announce){
-    var n = count(), p = n/total;
-    $('#pill').css('--p', p);
-    $('#fill,#knob,.bubble').css('--p', p);
+    var n = count();
+    renderBar();
     setBubble(pct(n));
-    if(announce && MILESTONES[n]){
+    var msg = !announce ? null : n === total ? 'All done 🎉' : n % PER === 0 ? 'Strana '+(n/PER)+'/'+PAGES+' gotova ✓' : n === 2 ? 'Great start!' : null;
+    if(msg){
       clearTimeout(msgTimer);
-      setBubble(MILESTONES[n]);
+      setBubble(msg);
       msgTimer = setTimeout(function(){ setBubble(pct(count())); }, 2200);
     }
   }
+  buildBar();
+  renderPage();
   updateProgress(false);
 
   // idle poruke
@@ -367,12 +426,17 @@ $(function(){
 
   // Next page
   $('#nextBtn').on('click', function(){
-    if(count() < total){
+    if(pageCount(page) < PER){
       var missing = $('.card').not('.final').filter(function(){ return answers[$(this).data('i')] === undefined; }).first();
       $('html,body').animate({scrollTop: missing.offset().top - 80}, 420);
       clearTimeout(msgTimer);
       setBubble('Answer all questions first');
       msgTimer = setTimeout(function(){ setBubble(pct(count())); }, 2200);
+    } else if(page < PAGES-1){
+      page++;
+      renderPage();
+      window.scrollTo(0,0);
+      renderBar();
     } else {
       $('#finalCard').show();
       $('html,body').animate({scrollTop: $('#finalCard').offset().top - 120}, 420);
