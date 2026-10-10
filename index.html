@@ -363,7 +363,7 @@ body{
 
 <main class="stream" id="stream"></main>
 
-<div class="nav" id="nav"><button id="backBtn" class="secondary" type="button" hidden>Nazad</button><button id="nextBtn" type="button">Sledeća strana</button><div class="nav-note" id="navNote" role="alert" aria-live="polite">Sva pitanja su obavezna</div></div>
+<div class="nav" id="nav"><button id="backBtn" class="secondary" type="button" hidden>Nazad</button><button id="nextBtn" type="button">Sledeća strana</button><div class="nav-note" id="navNote" role="alert" aria-live="polite">Obavezno je odgovoriti na bar jedno pitanje</div></div>
 
 <div class="page-pin" id="pagePin"></div>
 
@@ -433,7 +433,7 @@ $(function(){
     'Moj posao mi daje osećaj smisla.',
     'Sveukupno, zadovoljan/na sam svojim poslom.'
   ];
-  var PER = 5, PAGES = 3, page = 0;
+  var PER = 5, PAGES = 3, REQUIRED = 1, page = 0;   // REQUIRED = koliko pitanja po strani mora biti odgovoreno
   // naslov: na prvoj strani pozdrav, na ostalim motivaciona poruka (isti font)
   var PAGE_MSGS = [
     'Zdravo 🖐️ Daniel, hajde da počnemo.',
@@ -721,7 +721,7 @@ $(function(){
   if(document.fonts && document.fonts.ready) document.fonts.ready.then(function(){ renderBar(); });
 
   function updateProgress(announce){
-    if(pageCount(page) === PER) $('#navNote').removeClass('on');
+    if(pageCount(page) >= REQUIRED) $('#navNote').removeClass('on');
     var n = count();
     renderBar();
     setBubble(pct(n));
@@ -773,8 +773,8 @@ $(function(){
 
   // Next page
   $('#nextBtn').on('click', function(){
-    if(pageCount(page) < PER){
-      // nisu sva pitanja odgovorena: ostaje na strani i ispod dugmeta pise napomena
+    if(pageCount(page) < REQUIRED){
+      // nijedno pitanje nije odgovoreno: ostaje na strani, ispod dugmeta pise napomena i skrola na prvo pitanje
       $('#navNote').addClass('on');
       var $missing = $('.card').not('.final').filter(function(){ return answers[$(this).data('i')] === undefined; }).addClass('missing');
       $('html,body').animate({scrollTop: $missing.first().offset().top - 90}, 420);
