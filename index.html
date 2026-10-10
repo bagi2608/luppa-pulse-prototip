@@ -433,18 +433,11 @@ $(function(){
     'Moj posao mi daje osećaj smisla.',
     'Sveukupno, zadovoljan/na sam svojim poslom.'
   ];
-  var PER = 5, PAGES = 10, page = 0;
+  var PER = 5, PAGES = 3, page = 0;
   // naslov: na prvoj strani pozdrav, na ostalim motivaciona poruka (isti font)
   var PAGE_MSGS = [
     'Zdravo 🖐️ Daniel, hajde da počnemo.',
-    'Odličan početak, nastavljamo!',
-    'Iskreni odgovori prave razliku!',
-    'Odlično ti ide, nastavi dalje!',
-    'Na pola smo puta, samo tako!',
-    'Svaki odgovor je važan!',
-    'Još malo, daleko smo stigli!',
-    'Samo još tri strane do kraja!',
-    'Skoro smo na cilju, još jedna strana!',
+    'Odlično ti ide, još samo jedna strana!',
     'Poslednja strana, hvala na izdvojenom vremenu!'
   ];
 
@@ -690,7 +683,7 @@ $(function(){
   });
 
   // ---------- progress ----------
-  var total = QUESTIONS.length, msgTimer, bubbleText = '0%';
+  var total = PAGES * PER, msgTimer, bubbleText = '0%';
   function count(){ return Object.keys(answers).length; }
   function pageCount(k){
     var c = 0;
