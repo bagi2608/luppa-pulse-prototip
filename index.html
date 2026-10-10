@@ -744,13 +744,6 @@ $(function(){
   renderPage();
   updateProgress(false);
 
-  // idle poruke
-  setInterval(function(){
-    if(count()<total){
-      setBubble('Vaši odgovori su anonimni');
-      setTimeout(function(){ setBubble(pct(count())); }, 2600);
-    }
-  }, 12000);
 
   // ---------- scroll: header fade + dock swap ----------
   function onScroll(){
