@@ -363,7 +363,7 @@ body{
 
 <main class="stream" id="stream"></main>
 
-<div class="nav" id="nav"><button id="backBtn" class="secondary" type="button" hidden>Nazad</button><button id="nextBtn" type="button">Sledeća strana</button><div class="nav-note" id="navNote" role="alert" aria-live="polite">Obavezno je odgovoriti na bar jedno pitanje</div></div>
+<div class="nav" id="nav"><button id="backBtn" class="secondary" type="button" hidden>Nazad</button><button id="nextBtn" type="button">Sledeća strana</button><div class="nav-note" id="navNote" role="alert" aria-live="polite">Ovo pitanje je obavezno</div></div>
 
 <div class="page-pin" id="pagePin"></div>
 
@@ -433,7 +433,8 @@ $(function(){
     'Moj posao mi daje osećaj smisla.',
     'Sveukupno, zadovoljan/na sam svojim poslom.'
   ];
-  var PER = 5, PAGES = 3, REQUIRED = 1, page = 0;   // REQUIRED = koliko pitanja po strani mora biti odgovoreno
+  var PER = 5, PAGES = 3, page = 0;
+  var MANDATORY = [0];   // redni brojevi (od 0) obaveznih pitanja; sva ostala su opciona
   // naslov: na prvoj strani pozdrav, na ostalim motivaciona poruka (isti font)
   var PAGE_MSGS = [
     'Zdravo 🖐️ Daniel, hajde da počnemo.',
@@ -685,6 +686,9 @@ $(function(){
   // ---------- progress ----------
   var total = PAGES * PER, msgTimer, bubbleText = '0%';
   function count(){ return Object.keys(answers).length; }
+  function missingMandatory(){
+    return MANDATORY.filter(function(i){ return i >= page*PER && i < page*PER+PER && answers[i] === undefined; });
+  }
   function pageCount(k){
     var c = 0;
     for(var i=k*PER;i<k*PER+PER;i++) if(answers[i] !== undefined) c++;
@@ -721,7 +725,7 @@ $(function(){
   if(document.fonts && document.fonts.ready) document.fonts.ready.then(function(){ renderBar(); });
 
   function updateProgress(announce){
-    if(pageCount(page) >= REQUIRED) $('#navNote').removeClass('on');
+    if(!missingMandatory().length) $('#navNote').removeClass('on');
     var n = count();
     renderBar();
     setBubble(pct(n));
@@ -773,10 +777,11 @@ $(function(){
 
   // Next page
   $('#nextBtn').on('click', function(){
-    if(pageCount(page) < REQUIRED){
-      // nijedno pitanje nije odgovoreno: ostaje na strani, ispod dugmeta pise napomena i skrola na prvo pitanje
-      $('#navNote').addClass('on');
-      var $missing = $('.card').not('.final').filter(function(){ return answers[$(this).data('i')] === undefined; }).addClass('missing');
+    var miss = missingMandatory();
+    if(miss.length){
+      // obavezno pitanje nije odgovoreno: ostaje na strani, ispod dugmeta pise napomena i skrola na to pitanje
+      $('#navNote').text(miss.length === 1 ? 'Pitanje '+('0'+(miss[0]+1)).slice(-2)+' je obavezno' : 'Označena pitanja su obavezna').addClass('on');
+      var $missing = $('.card').not('.final').filter(function(){ return miss.indexOf(+$(this).data('i')) > -1; }).addClass('missing');
       $('html,body').animate({scrollTop: $missing.first().offset().top - 90}, 420);
     } else if(page < PAGES-1){
       page++;
