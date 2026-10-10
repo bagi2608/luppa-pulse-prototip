@@ -143,12 +143,15 @@ body{
   bottom:calc(37px + env(safe-area-inset-bottom,0px)); z-index:3;
 }
 /* status bar: 3 debele pilule (po jedna za stranu), razmak 2px; spoljni krajevi zaobljeni, unutrasnje ivice ravne */
-.pill{position:relative; width:589px; max-width:calc(100vw - 32px); height:34px; background:transparent}
+.pill{position:relative; width:589px; max-width:calc(100vw - 32px); height:40px; background:transparent}
 .sg-wrap{display:flex; gap:2px; height:100%}
-.sg-seg{position:relative; flex:1; height:100%; border-radius:0; background:rgba(23,23,56,.1); overflow:hidden; display:grid; place-items:center}
-.sg-seg:first-child{border-radius:17px 0 0 17px}
-.sg-seg:last-child{border-radius:0 17px 17px 0}
-.sg-seg i{position:absolute; left:0; top:0; bottom:0; width:0; background:linear-gradient(90deg,#FFC8B4,#FF521B); transition:width .42s var(--ease-out)}
+.sg-seg{position:relative; flex:1; height:100%; border-radius:0; background:rgba(23,23,56,.1); overflow:hidden; display:grid; place-items:center; padding-bottom:10px}
+.sg-dots{position:absolute; left:0; right:0; bottom:7px; display:flex; justify-content:space-around; z-index:1; pointer-events:none}
+.sg-dots i{width:4px; height:4px; border-radius:50%; background:rgba(23,23,56,.25); transition:background .25s var(--ease-out), transform .25s var(--ease-out)}
+.sg-dots i.on{background:#171738; transform:scale(1.25)}
+.sg-seg:first-child{border-radius:20px 0 0 20px}
+.sg-seg:last-child{border-radius:0 20px 20px 0}
+.sg-seg > i{position:absolute; left:0; top:0; bottom:0; width:0; background:linear-gradient(90deg,#FFC8B4,#FF521B); transition:width .42s var(--ease-out)}
 .sg-pct{position:relative; z-index:2; height:20px; padding:0 10px; border-radius:10px; background:rgba(255,255,255,.88); font:700 13px/20px 'Inter',sans-serif; color:#171738; white-space:nowrap}
 /* Back / Next page: odmah ispod poslednje kartice */
 .nav{position:relative; z-index:1; max-width:1020px; margin:0 auto; padding:12px 16px 170px; display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:12px}
@@ -282,9 +285,9 @@ body{
   .comment.open .comment-body{grid-template-rows:1fr}
   .comment-inner{overflow:hidden; min-height:0}
   .comment-inner > textarea{margin-top:8px; font-size:16px}
-  .pill{height:32px}
-  .sg-seg:first-child{border-radius:16px 0 0 16px}
-  .sg-seg:last-child{border-radius:0 16px 16px 0}
+  .pill{height:38px}
+  .sg-seg:first-child{border-radius:19px 0 0 19px}
+  .sg-seg:last-child{border-radius:0 19px 19px 0}
   .sg-pct{font-size:12px; padding:0 8px}
   .dock{bottom:calc(28px + env(safe-area-inset-bottom,0px)); width:calc(100vw - 32px)}
   .nav button{padding:0 20px}
@@ -667,11 +670,14 @@ $(function(){
     $pill.empty();
     bar = {segEls:[], fills:[]};
     var $w = $('<div class="sg-wrap">').appendTo($pill);
-    for(var k=0;k<PAGES;k++){ var $s = $('<div class="sg-seg"><i></i></div>').appendTo($w); bar.segEls.push($s); bar.fills.push($s.find('i')); }
+    bar.sdots = [];
+    for(var k=0;k<PAGES;k++){ var $s = $('<div class="sg-seg"><i></i></div>').appendTo($w); bar.segEls.push($s); bar.fills.push($s.find('i'));
+      var $dd = $('<div class="sg-dots">').appendTo($s); for(var j=0;j<PER;j++) bar.sdots.push($('<i>').appendTo($dd)); }
     bar.text = $('<span class="sg-pct" id="bubble">').text(bubbleText).appendTo(bar.segEls[page] || bar.segEls[0]);
   }
   function renderBar(){
     bar.fills.forEach(function($f,k){ $f.css('width', (pageCount(k)/PER*100)+'%'); });
+    bar.sdots.forEach(function($d,i){ $d.toggleClass('on', answers[i] !== undefined); });
     bar.segEls[page].append(bar.text);   // procenat je uvek u trenutnoj strani
   }
   $(window).on('resize', function(){ renderBar(); });
