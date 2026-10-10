@@ -142,24 +142,36 @@ body{
   position:fixed; left:50%; transform:translateX(-50%);
   bottom:calc(37px + env(safe-area-inset-bottom,0px)); z-index:3;
 }
-/* status bar: tamna zaobljena traka sa tackicama za strane i belim klizacem (koncept "slider") */
 .pill{
-  position:relative; width:589px; max-width:calc(100vw - 32px); height:44px;
-  background:#E4E0DE; border-radius:16px;
-  box-shadow:inset 0 1px 2px rgba(23,23,56,.08);
+  width:589px; max-width:calc(100vw - 32px); height:29px;
+  background:#fff; border-top:1px solid rgba(0,0,0,.04); border-radius:15px;
+  box-shadow:0 2px 1px rgba(0,0,0,.09);
+  position:relative;
+  transition:transform .18s var(--ease-out), opacity .18s var(--ease-out);
 }
-.pb-cells{position:absolute; inset:4px; display:flex}
-.pb-cell{flex:1; display:grid; place-items:center}
-.pb-dot{width:5px; height:5px; border-radius:50%; background:rgba(23,23,56,.28); transition:background .3s var(--ease-out), transform .3s var(--ease-out)}
-.pb-cell.done .pb-dot{background:#FF521B; transform:scale(1.5)}
-.pb-thumb{
-  position:absolute; top:4px; bottom:4px; left:4px; z-index:2; display:grid; place-items:center; overflow:hidden;
-  background:#fff; border-radius:12px; box-shadow:0 2px 8px rgba(23,23,56,.16), 0 0 0 .5px rgba(23,23,56,.06);
-  transition:transform .45s var(--ease-out);
+.pill .track{
+  position:absolute; left:12px; right:17px; top:11px; height:6px;
+  border-radius:2px; background:rgba(216,216,216,.5); overflow:hidden;
 }
-.pb-text{position:relative; top:-2px; font:600 14px/1 'Inter',sans-serif; color:var(--ink); white-space:nowrap; letter-spacing:0}
-.pb-line{position:absolute; left:12px; right:12px; bottom:6px; height:3px; border-radius:2px; background:rgba(23,23,56,.08); overflow:hidden}
-.pb-line > i{display:block; height:100%; width:0; border-radius:2px; background:linear-gradient(90deg,#FFC8B4,#FF521B); transition:width .42s var(--ease-out)}
+.pill .fill{
+  position:absolute; inset:0;
+  background:linear-gradient(90deg,#FFC8B4,#FF521B);
+  transform-origin:left; transform:scaleX(var(--p,0));
+  transition:transform .42s var(--ease-out);
+}
+.bubble{
+  position:absolute; bottom:30px;
+  left:calc(12px + var(--track-w,560px) * var(--p,0));
+  transform:translateX(-50%);
+  background:#fff; border-radius:72px; padding:0 12px; height:22px; line-height:22px;
+  font-size:14px; letter-spacing:.02em; text-transform:uppercase; color:rgba(23,23,56,.8);
+  white-space:nowrap;
+  transition:left .42s var(--ease-out);
+}
+.bubble::after{
+  content:''; position:absolute; left:50%; bottom:-2.5px; transform:translateX(-50%);
+  border:2.6px solid transparent; border-top:4.5px solid #fff; border-bottom:none;
+}
 /* Back / Next page: odmah ispod poslednje kartice */
 .nav{position:relative; z-index:1; max-width:1020px; margin:0 auto; padding:12px 16px 170px; display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:12px}
 /* napomena ispod Next page kad nisu odgovorena sva pitanja */
@@ -186,6 +198,23 @@ body{
 }
 .final h2{font-weight:500; font-size:23px; margin:0}
 
+/* ===== progress celog upitnika: 3 strane, diskretni delovi ===== */
+.pill .track{background:none; overflow:visible}
+.pill .knob{
+  position:absolute; top:8px; left:0; width:12px; height:12px;
+  background:#fff; border:3px solid #FF521B; border-radius:50%; z-index:3;
+  transition:left .42s var(--ease-out);
+}
+.bubble{z-index:4}
+.pt-base{position:absolute; inset:0; border-radius:2px; background:rgba(216,216,216,.5)}
+.pt-fill{
+  position:absolute; left:0; top:0; bottom:0; border-radius:2px;
+  background-image:linear-gradient(90deg,#FFC8B4,#FF521B);
+  transition:width .42s var(--ease-out);
+}
+/* v1: diskretni delovi */
+.pt-seg{position:absolute; top:0; height:100%; border-radius:3px; background:rgba(216,216,216,.5); overflow:hidden}
+.pt-seg .pt-fill{border-radius:0}
 /* oznaka strane iznad kartica */
 .page-label{text-align:center; font-size:13px; letter-spacing:.02em; text-transform:uppercase; opacity:.55; margin:0 0 14px}
 /* "Strana X od Y": u toku stranice nestaje cim se krene skrolovati, a kad logo i naslov izadju iz vidnog polja vraca se zakacena gore */
@@ -292,10 +321,11 @@ body{
   .comment.open .comment-body{grid-template-rows:1fr}
   .comment-inner{overflow:hidden; min-height:0}
   .comment-inner > textarea{margin-top:8px; font-size:16px}
-  .pill{height:42px; border-radius:15px}
-  .pb-thumb{border-radius:11px}
-  .pb-text{font-size:13px; font-weight:500}
-  .pb-line{left:10px; right:10px}
+  .pill{height:36px; border-radius:18px}
+  .pill .track{left:16px; right:16px; top:13px; height:10px}
+  .pill .track, .pt-seg{border-radius:5px}
+  .pill .knob{top:10px; width:16px; height:16px; border-width:3px}
+  .bubble{bottom:37px; height:26px; line-height:26px; padding:0 14px}
   .dock{bottom:calc(28px + env(safe-area-inset-bottom,0px)); width:calc(100vw - 32px)}
   .nav button{padding:0 20px}
   #nextBtn{flex:1 1 auto; max-width:240px}
@@ -675,18 +705,25 @@ $(function(){
   var $pill = $('#pill'), bar = {};
   function buildBar(){
     $pill.empty();
-    bar = {cells:[]};
-    var $cells = $('<div class="pb-cells">').appendTo($pill);
-    for(var k=0;k<PAGES;k++) bar.cells.push($('<div class="pb-cell"><i class="pb-dot"></i></div>').appendTo($cells));
-    bar.thumb = $('<div class="pb-thumb">').appendTo($pill);
-    bar.text = $('<span class="pb-text" id="bubble">').text(bubbleText).appendTo(bar.thumb);
-    bar.fill = $('<i>').appendTo($('<div class="pb-line">').appendTo(bar.thumb));
+    bar = {track:$('<div class="track">').appendTo($pill), segs:[]};
+    for(var k=0;k<PAGES;k++){
+      var $s = $('<div class="pt-seg">').appendTo(bar.track);
+      bar.segs.push({$s:$s, $f:$('<div class="pt-fill">').appendTo($s)});
+    }
+    bar.knob = $('<div class="knob" id="knob">').appendTo($pill);
+    bar.bubble = $('<div class="bubble" id="bubble">').text(bubbleText).appendTo($pill);
   }
   function renderBar(){
-    var cellW = ($pill.innerWidth() - 8) / PAGES;
-    bar.thumb.css({width:cellW+'px', transform:'translateX('+(page*cellW)+'px)'});
-    bar.cells.forEach(function($c,k){ $c.toggleClass('done', k < page); });
-    bar.fill.css('width', (pageCount(page)/PER*100)+'%');
+    var t = bar.track[0], W = t.clientWidth, tl = t.offsetLeft;
+    var gap = 4, w = (W - gap*(PAGES-1))/PAGES;
+    bar.segs.forEach(function(sg,k){
+      var left = k*(w+gap);
+      sg.$s.css({left:left+'px', width:w+'px'});
+      sg.$f.css({width:(pageCount(k)/PER*100)+'%', backgroundSize:W+'px 100%', backgroundPosition:(-left)+'px 0'});
+    });
+    var x = page*(w+gap) + pageCount(page)/PER*w;
+    bar.knob.css('left', (tl + x - bar.knob.outerWidth()/2)+'px');
+    bar.bubble.css('left', (tl + x)+'px');
   }
   $(window).on('resize', function(){ renderBar(); });
   if(document.fonts && document.fonts.ready) document.fonts.ready.then(function(){ renderBar(); });
@@ -696,7 +733,7 @@ $(function(){
     var n = count();
     renderBar();
     setBubble(pct(n));
-    var msg = !announce ? null : n === total ? 'Gotovo 🎉' : n % PER === 0 ? (n/PER)+'/'+PAGES+' gotova ✓' : n === 2 ? 'Odlično!' : null;
+    var msg = !announce ? null : n === total ? 'Gotovo 🎉' : n % PER === 0 ? 'Strana '+(n/PER)+'/'+PAGES+' gotova ✓' : n === 2 ? 'Odličan početak!' : null;
     if(msg){
       clearTimeout(msgTimer);
       setBubble(msg);
