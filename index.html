@@ -142,9 +142,9 @@ body{
   position:fixed; left:50%; transform:translateX(-50%);
   bottom:calc(37px + env(safe-area-inset-bottom,0px)); z-index:3;
 }
-/* status bar: 3 debele pilule (po jedna za stranu); spoljni krajevi zaobljeni, unutrasnje ivice ravne */
+/* status bar: 3 debele pilule (po jedna za stranu), razmak 2px; spoljni krajevi zaobljeni, unutrasnje ivice ravne */
 .pill{position:relative; width:589px; max-width:calc(100vw - 32px); height:34px; background:transparent}
-.sg-wrap{display:flex; gap:6px; height:100%}
+.sg-wrap{display:flex; gap:2px; height:100%}
 .sg-seg{position:relative; flex:1; height:100%; border-radius:0; background:rgba(23,23,56,.1); overflow:hidden; display:grid; place-items:center}
 .sg-seg:first-child{border-radius:17px 0 0 17px}
 .sg-seg:last-child{border-radius:0 17px 17px 0}
