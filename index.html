@@ -142,36 +142,14 @@ body{
   position:fixed; left:50%; transform:translateX(-50%);
   bottom:calc(37px + env(safe-area-inset-bottom,0px)); z-index:3;
 }
-.pill{
-  width:589px; max-width:calc(100vw - 32px); height:29px;
-  background:#fff; border-top:1px solid rgba(0,0,0,.04); border-radius:15px;
-  box-shadow:0 2px 1px rgba(0,0,0,.09);
-  position:relative;
-  transition:transform .18s var(--ease-out), opacity .18s var(--ease-out);
-}
-.pill .track{
-  position:absolute; left:12px; right:17px; top:11px; height:6px;
-  border-radius:2px; background:rgba(216,216,216,.5); overflow:hidden;
-}
-.pill .fill{
-  position:absolute; inset:0;
-  background:linear-gradient(90deg,#FFC8B4,#FF521B);
-  transform-origin:left; transform:scaleX(var(--p,0));
-  transition:transform .42s var(--ease-out);
-}
-.bubble{
-  position:absolute; bottom:30px;
-  left:calc(12px + var(--track-w,560px) * var(--p,0));
-  transform:translateX(-50%);
-  background:#fff; border-radius:72px; padding:0 12px; height:22px; line-height:22px;
-  font-size:14px; letter-spacing:.02em; text-transform:uppercase; color:rgba(23,23,56,.8);
-  white-space:nowrap;
-  transition:left .42s var(--ease-out);
-}
-.bubble::after{
-  content:''; position:absolute; left:50%; bottom:-2.5px; transform:translateX(-50%);
-  border:2.6px solid transparent; border-top:4.5px solid #fff; border-bottom:none;
-}
+/* status bar: 3 debele pilule (po jedna za stranu); spoljni krajevi zaobljeni, unutrasnje ivice ravne */
+.pill{position:relative; width:589px; max-width:calc(100vw - 32px); height:34px; background:transparent}
+.sg-wrap{display:flex; gap:6px; height:100%}
+.sg-seg{position:relative; flex:1; height:100%; border-radius:0; background:rgba(23,23,56,.1); overflow:hidden; display:grid; place-items:center}
+.sg-seg:first-child{border-radius:17px 0 0 17px}
+.sg-seg:last-child{border-radius:0 17px 17px 0}
+.sg-seg i{position:absolute; left:0; top:0; bottom:0; width:0; background:linear-gradient(90deg,#FFC8B4,#FF521B); transition:width .42s var(--ease-out)}
+.sg-pct{position:relative; z-index:2; height:20px; padding:0 10px; border-radius:10px; background:rgba(255,255,255,.88); font:700 13px/20px 'Inter',sans-serif; color:#171738; white-space:nowrap}
 /* Back / Next page: odmah ispod poslednje kartice */
 .nav{position:relative; z-index:1; max-width:1020px; margin:0 auto; padding:12px 16px 170px; display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:12px}
 /* napomena ispod Next page kad nisu odgovorena sva pitanja */
@@ -198,23 +176,6 @@ body{
 }
 .final h2{font-weight:500; font-size:23px; margin:0}
 
-/* ===== progress celog upitnika: 3 strane, diskretni delovi ===== */
-.pill .track{background:none; overflow:visible}
-.pill .knob{
-  position:absolute; top:8px; left:0; width:12px; height:12px;
-  background:#fff; border:3px solid #FF521B; border-radius:50%; z-index:3;
-  transition:left .42s var(--ease-out);
-}
-.bubble{z-index:4}
-.pt-base{position:absolute; inset:0; border-radius:2px; background:rgba(216,216,216,.5)}
-.pt-fill{
-  position:absolute; left:0; top:0; bottom:0; border-radius:2px;
-  background-image:linear-gradient(90deg,#FFC8B4,#FF521B);
-  transition:width .42s var(--ease-out);
-}
-/* v1: diskretni delovi */
-.pt-seg{position:absolute; top:0; height:100%; border-radius:3px; background:rgba(216,216,216,.5); overflow:hidden}
-.pt-seg .pt-fill{border-radius:0}
 /* oznaka strane iznad kartica */
 .page-label{text-align:center; font-size:13px; letter-spacing:.02em; text-transform:uppercase; opacity:.55; margin:0 0 14px}
 /* "Strana X od Y": u toku stranice nestaje cim se krene skrolovati, a kad logo i naslov izadju iz vidnog polja vraca se zakacena gore */
@@ -321,11 +282,10 @@ body{
   .comment.open .comment-body{grid-template-rows:1fr}
   .comment-inner{overflow:hidden; min-height:0}
   .comment-inner > textarea{margin-top:8px; font-size:16px}
-  .pill{height:36px; border-radius:18px}
-  .pill .track{left:16px; right:16px; top:13px; height:10px}
-  .pill .track, .pt-seg{border-radius:5px}
-  .pill .knob{top:10px; width:16px; height:16px; border-width:3px}
-  .bubble{bottom:37px; height:26px; line-height:26px; padding:0 14px}
+  .pill{height:32px}
+  .sg-seg:first-child{border-radius:16px 0 0 16px}
+  .sg-seg:last-child{border-radius:0 16px 16px 0}
+  .sg-pct{font-size:12px; padding:0 8px}
   .dock{bottom:calc(28px + env(safe-area-inset-bottom,0px)); width:calc(100vw - 32px)}
   .nav button{padding:0 20px}
   #nextBtn{flex:1 1 auto; max-width:240px}
@@ -705,25 +665,14 @@ $(function(){
   var $pill = $('#pill'), bar = {};
   function buildBar(){
     $pill.empty();
-    bar = {track:$('<div class="track">').appendTo($pill), segs:[]};
-    for(var k=0;k<PAGES;k++){
-      var $s = $('<div class="pt-seg">').appendTo(bar.track);
-      bar.segs.push({$s:$s, $f:$('<div class="pt-fill">').appendTo($s)});
-    }
-    bar.knob = $('<div class="knob" id="knob">').appendTo($pill);
-    bar.bubble = $('<div class="bubble" id="bubble">').text(bubbleText).appendTo($pill);
+    bar = {segEls:[], fills:[]};
+    var $w = $('<div class="sg-wrap">').appendTo($pill);
+    for(var k=0;k<PAGES;k++){ var $s = $('<div class="sg-seg"><i></i></div>').appendTo($w); bar.segEls.push($s); bar.fills.push($s.find('i')); }
+    bar.text = $('<span class="sg-pct" id="bubble">').text(bubbleText).appendTo(bar.segEls[page] || bar.segEls[0]);
   }
   function renderBar(){
-    var t = bar.track[0], W = t.clientWidth, tl = t.offsetLeft;
-    var gap = 4, w = (W - gap*(PAGES-1))/PAGES;
-    bar.segs.forEach(function(sg,k){
-      var left = k*(w+gap);
-      sg.$s.css({left:left+'px', width:w+'px'});
-      sg.$f.css({width:(pageCount(k)/PER*100)+'%', backgroundSize:W+'px 100%', backgroundPosition:(-left)+'px 0'});
-    });
-    var x = page*(w+gap) + pageCount(page)/PER*w;
-    bar.knob.css('left', (tl + x - bar.knob.outerWidth()/2)+'px');
-    bar.bubble.css('left', (tl + x)+'px');
+    bar.fills.forEach(function($f,k){ $f.css('width', (pageCount(k)/PER*100)+'%'); });
+    bar.segEls[page].append(bar.text);   // procenat je uvek u trenutnoj strani
   }
   $(window).on('resize', function(){ renderBar(); });
   if(document.fonts && document.fonts.ready) document.fonts.ready.then(function(){ renderBar(); });
@@ -733,7 +682,7 @@ $(function(){
     var n = count();
     renderBar();
     setBubble(pct(n));
-    var msg = !announce ? null : n === total ? 'Gotovo 🎉' : n % PER === 0 ? 'Strana '+(n/PER)+'/'+PAGES+' gotova ✓' : n === 2 ? 'Odličan početak!' : null;
+    var msg = !announce ? null : n === total ? 'Gotovo 🎉' : n % PER === 0 ? (n/PER)+'/'+PAGES+' gotova ✓' : n === 2 ? 'Odlično!' : null;
     if(msg){
       clearTimeout(msgTimer);
       setBubble(msg);
