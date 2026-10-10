@@ -235,7 +235,6 @@ body{
 .qn{flex:0 0 0; width:0; font:400 23px/30px 'Inter',sans-serif; letter-spacing:-.23px}
 .qtx{flex:1; min-width:0}
 .qt-title{margin:0; font:400 23px/30px 'Inter',sans-serif; letter-spacing:-.23px}
-.qt-hint{margin:10px 0 0; font:400 17px/26px 'Inter',sans-serif; opacity:.85}
 .qbody{margin:23px 0 0}
 /* radio / checkbox */
 .opts{display:flex; flex-direction:column; gap:14px; padding-left:34px}
@@ -338,7 +337,6 @@ body{
   .numc{top:12px; left:12px}
   .qn{font-size:16px; line-height:22px; font-weight:500; letter-spacing:-.16px}
   .qt-title{font-size:16px; line-height:22px; letter-spacing:-.16px; font-weight:500}
-  .qt-hint{font-size:14px; line-height:20px; margin-top:8px}
   .qbody{margin:16px 0 0}
   .opts{padding-left:0; gap:6px}
   .opt{min-height:44px; font-size:15px; gap:12px}
@@ -473,10 +471,10 @@ $(function(){
   var SPECIAL = {
     5:{type:'radio', text:'Šta vam je najvažnije u svakodnevnom radu?',
        options:['Dobar tim i atmosfera','Plata i benefiti','Mogućnost napredovanja','Fleksibilnost radnog vremena','Zanimljiv i izazovan posao','Drugo']},
-    6:{type:'check', text:'Koje od ovih benefita biste voleli da vam kompanija ponudi?', hint:'Možete izabrati više odgovora.',
+    6:{type:'check', text:'Koje od ovih benefita biste voleli da vam kompanija ponudi?',
        options:['Dodatno zdravstveno osiguranje','Edukacija i kursevi','Rad od kuće','Sport i rekreacija','Dodatni slobodni dani','Mentorstvo']},
-    7:{type:'open', text:'Šta biste promenili u svom radnom okruženju?', hint:'Odgovor je anoniman, napišite koliko god želite.'},
-    8:{type:'rank', text:'Poređajte po važnosti sledeće kategorije, pri čemu je 1 najvažnija:', hint:'Prevucite stavke da promenite redosled.',
+    7:{type:'open', text:'Šta biste promenili u svom radnom okruženju?'},
+    8:{type:'rank', text:'Poređajte po važnosti sledeće kategorije, pri čemu je 1 najvažnija:',
        items:['Inovacije i promena','Komunikacija','Plata i benefiti','Timski duh','Razvoj karijere']}
   };
   var esc = function(t){ return $('<div>').text(t).html(); };
@@ -484,8 +482,7 @@ $(function(){
   function numHtml(i){ return '<span class="numc"><b>'+('0'+(i+1)).slice(-2)+'</b>'+CHECK+'</span>'; }
   var GRIP = '<svg width="12" height="18" viewBox="0 0 12 18" fill="none" stroke="#171738" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4.5 6 1.5l3 3M3 13.5l3 3 3-3M2 7.5h8M2 10.5h8"/></svg>';
   function appendSpecial(sp, i){
-    var head = '<div class="qh"><span class="qn">'+numHtml(i)+'</span><div class="qtx"><p class="qt-title">'+esc(sp.text)+'</p>'+
-               (sp.hint ? '<p class="qt-hint">'+esc(sp.hint)+'</p>' : '')+'</div></div>', body = '';
+    var head = '<div class="qh"><span class="qn">'+numHtml(i)+'</span><div class="qtx"><p class="qt-title">'+esc(sp.text)+'</p></div></div>', body = '';
     if(sp.type === 'radio' || sp.type === 'check'){
       body = '<div class="opts" role="'+(sp.type==='radio' ? 'radiogroup' : 'group')+'">'+sp.options.map(function(o,k){
         return '<label class="opt"><input type="'+(sp.type==='radio' ? 'radio' : 'checkbox')+'" name="q'+i+'" value="'+k+'"><span class="ctl '+(sp.type==='radio' ? 'radio' : 'check')+'"></span><span>'+esc(o)+'</span></label>';
